@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Selected Unity and C# mobile game development work by Cristiano Piromalli, covering gameplay, editor tools, and game content.">
+  <meta name="description" content="Cristiano Piromalli, Senior Unity Developer based in Italy and focused on fully remote work. Mobile games, gameplay, editor tools, and content delivery.">
   <meta name="theme-color" content="#194f3c">
-  <title>Cristiano Piromalli · Unity Game Developer</title>
+  <title>Cristiano Piromalli · Senior Unity Developer</title>
   <link rel="canonical" href="https://sciuzza84.github.io/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Cristiano Piromalli">
-  <meta property="og:title" content="Cristiano Piromalli · Unity Game Developer">
-  <meta property="og:description" content="Selected Unity and C# mobile game development work, covering gameplay, editor tools, and game content.">
+  <meta property="og:title" content="Cristiano Piromalli · Senior Unity Developer">
+  <meta property="og:description" content="Based in Italy · Fully remote. Selected Unity and C# work in mobile games, gameplay, editor tools, and content delivery.">
   <meta property="og:url" content="https://sciuzza84.github.io/">
   <meta property="og:image" content="https://sciuzza84.github.io/portfolio-preview.png">
   <meta property="og:image:type" content="image/png">
@@ -18,8 +18,8 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Cristiano Piromalli. Unity game developer. Unity, C#, and mobile games.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Cristiano Piromalli · Unity Game Developer">
-  <meta name="twitter:description" content="Selected Unity and C# mobile game development work, covering gameplay, editor tools, and game content.">
+  <meta name="twitter:title" content="Cristiano Piromalli · Senior Unity Developer">
+  <meta name="twitter:description" content="Based in Italy · Fully remote. Selected Unity and C# work in mobile games, gameplay, editor tools, and content delivery.">
   <meta name="twitter:image" content="https://sciuzza84.github.io/portfolio-preview.png">
   <meta name="twitter:image:alt" content="Cristiano Piromalli. Unity game developer. Unity, C#, and mobile games.">
   <link rel="stylesheet" href="styles.css">
@@ -40,8 +40,9 @@
 
   <main id="main" class="wrap" tabindex="-1">
     <section class="hero" aria-labelledby="intro">
-      <p class="label">Unity · C# · Mobile games</p>
-      <h1 id="intro">Unity game<br>developer<span class="dot">.</span></h1>
+      <p class="label">C# · Mobile games</p>
+      <h1 id="intro">Senior Unity<br>Developer<span class="dot">.</span></h1>
+      <p class="location">Based in Italy · Fully remote</p>
       <p class="intro">I build mobile games in Unity and C#. I work on gameplay and tools that help teams create and maintain game content.</p>
       <div class="hero-actions">
         <a class="action" href="#work">Explore my work</a>
@@ -50,6 +51,7 @@
       <div class="profile-links" aria-label="Professional profiles">
         <a href="https://www.linkedin.com/in/cristiano-piromalli-372b1a153/">LinkedIn</a>
         <a href="https://github.com/Sciuzza84">GitHub</a>
+        <a href="mailto:cristiano.piromalli@gmail.com">cristiano.piromalli@gmail.com</a>
       </div>
     </section>
 
@@ -59,7 +61,7 @@
       </div>
 
       <nav aria-label="Case studies" class="case-index">
-        <a href="#diana"><span class="tag">Gameplay and tools</span><strong>Love, Diana Hidden Objects</strong></a>
+        <a href="#diana"><span class="tag">Editor tooling</span><strong>Love, Diana Hidden Objects</strong></a>
         <a href="#burraco"><span class="tag">Multiplayer</span><strong>Burraco</strong></a>
         <a href="#don-ay"><span class="tag">Live content</span><strong>Don-Ay: Pet Land</strong></a>
       </nav>
@@ -78,7 +80,10 @@
 
       <section class="company" aria-labelledby="digitalmoka-title">
         <header class="company-heading">
-          <h3 id="digitalmoka-title">Digitalmoka</h3>
+          <div>
+            <h3 id="digitalmoka-title">Digitalmoka</h3>
+            <p class="company-role">Senior Unity Developer · previously Lead Developer</p>
+          </div>
           <p class="dates">2023–present</p>
         </header>
         <article id="burraco" class="case" aria-labelledby="burraco-title">
@@ -88,7 +93,8 @@
             <a class="text-link" href="https://www.digitalmoka.com/burraco-online">Visit the official game page</a>
           </div>
           <div class="case-copy">
-            <p class="role">I wrote most of the backend and much of the Unity client for this published mobile card game.</p>
+            <p class="role">I was Lead Developer on this published mobile card game, defining the architecture and guiding the development work.</p>
+            <p>I wrote most of the backend and much of the Unity client, and supported live operations after launch.</p>
             <h5>Helping players stay in sync</h5>
             <p>I worked on keeping players in sync and restoring a match when a player’s local view fell behind.</p>
           </div>
@@ -99,7 +105,7 @@
             <h4 id="mobile-games-title" class="case-title">Mobile puzzle games</h4>
           </div>
           <div class="case-copy">
-            <p class="role">I work with colleagues on a shared Unity framework and gameplay modules for hyper-casual mobile games.</p>
+            <p class="role">As Senior Unity Developer, I now work with colleagues on a shared Unity framework and gameplay modules for hyper-casual mobile puzzle games.</p>
           </div>
         </article>
       </section>
@@ -117,9 +123,10 @@
         </div>
         <div class="case-copy">
           <p class="role">I developed the game’s Unity software. Other contributors handled artwork and game design.</p>
+          <h5>From layered artwork to playable levels</h5>
+          <p>Our artist hid each object in the scene by placing it carefully against the background. I built a Unity Editor tool that reads the named layers in a Photoshop file and preserves each object's position. With one click, it builds the level prefab and its ScriptableObject data. We could use the artist's layout directly in the game.</p>
           <h5>Generating varied rounds from a finite catalog</h5>
           <p>The round generator favors objects and variants that have appeared less often. It avoids duplicates within each target group, chooses distractors separately, and saves the round configuration for the game to load.</p>
-          <p>I also built a Unity Editor tool that extracts sprites from imported artwork and sorts them into backgrounds, objects, and collectibles using naming conventions.</p>
         </div>
         </article>
         <article class="case" aria-labelledby="maintenance-title">

@@ -55,6 +55,7 @@ main:focus { outline: none; }
 .label { margin-bottom: 1.1rem; }
 .hero h1 { font-size: clamp(3.15rem, 10vw, 7.6rem); font-weight: 800; letter-spacing: -.055em; line-height: 1; }
 .dot { color: var(--accent); }
+.location { margin-top: 1.2rem; color: var(--muted); }
 .intro { max-width: 44ch; margin-block: 1.6rem 1.5rem; font-size: clamp(1.1rem, 2vw, 1.35rem); line-height: 1.6; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.6rem; }
 .action { display: inline-flex; align-items: center; min-height: 44px; background: var(--signal); font-weight: 750; padding: .65rem 1rem; text-decoration: none; }
@@ -62,7 +63,7 @@ main:focus { outline: none; }
 .text-link { color: var(--accent); font-weight: 650; text-underline-offset: .25em; }
 .text-link:hover { text-decoration-thickness: .14em; }
 .file-type { font-size: .875rem; font-weight: 500; }
-.profile-links { display: flex; gap: 1.4rem; margin-top: .9rem; font-size: .95rem; }
+.profile-links { display: flex; flex-wrap: wrap; gap: .25rem 1.4rem; margin-top: .9rem; font-size: .95rem; }
 
 .work, .experience, .collaborations, .teaching { border-top: 1px solid var(--line); padding-block: 1.6rem 2.5rem; scroll-margin-top: 1rem; }
 h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); letter-spacing: -.04em; line-height: 1.2; }
@@ -88,6 +89,7 @@ h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); letter-spacing: -.04em; line-height:
 .company + .company { margin-top: 2.5rem; }
 .company-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .4rem 1rem; padding-block: 1rem; }
 .company-heading h3 { font-size: clamp(1.4rem, 3vw, 1.7rem); letter-spacing: -.025em; }
+.company-role { margin-top: .3rem; color: var(--muted); }
 .project-links { margin: .75rem 0 0; padding-left: 1.2rem; }
 .project-links li + li { margin-top: .5rem; }
 .collaborations > .section-heading { margin-bottom: 1.5rem; }
