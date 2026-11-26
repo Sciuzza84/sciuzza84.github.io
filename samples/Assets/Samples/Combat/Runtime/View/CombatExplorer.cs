@@ -5,12 +5,16 @@ namespace GameplaySamples.Combat
 {
     public sealed class CombatExplorer : MonoBehaviour
     {
+        private enum Scenario { EndPhase, Opponent, Feedback }
+
         private const int MARGIN = 20;
+        private const float StackedControlsWidth = 300f;
 
         private static readonly Color Ink = new Color32(17, 25, 29, 255);
         private static readonly Color Paper = new Color32(237, 239, 225, 255);
         private static readonly Color Muted = new Color32(185, 199, 193, 255);
         private static readonly Color Mint = new Color32(133, 218, 183, 255);
+        private static readonly Color Coral = new Color32(245, 150, 145, 255);
 
         private Vector2 scrollPosition;
         private GUIStyle title;
@@ -19,8 +23,11 @@ namespace GameplaySamples.Combat
         private GUIStyle emphasis;
         private GUIStyle button;
         private GUIStyle panel;
+        private GUIStyle damageLabel;
+        private GUIStyle healLabel;
         private Action nextInteraction;
-        private bool showOpponent;
+        private Scenario scenario;
+        private FeedbackPool feedback = FeedbackBurst.CreatePool();
         private bool playerPhaseComplete;
         private bool opponentFinished;
         private int playerHealth;
@@ -64,39 +71,52 @@ namespace GameplaySamples.Combat
             int width = Mathf.Max(1, Mathf.Min(820, Screen.width - MARGIN * 2));
             GUILayout.BeginArea(new Rect((Screen.width - width) * 0.5f, MARGIN, width,
                 Mathf.Max(1, Screen.height - MARGIN * 2)));
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false);
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUIStyle.none, GUI.skin.verticalScrollbar);
+            float contentWidth = Mathf.Max(1f, width - GUI.skin.verticalScrollbar.fixedWidth - 8f);
+            bool stackControls = contentWidth < StackedControlsWidth;
+            GUILayout.BeginVertical(GUILayout.Width(contentWidth));
             GUILayout.Label("Turn-based combat", title);
-            GUILayout.Label("Step through card effects and an opponent's choices.", body);
+            GUILayout.Label("Card effects, opponent choices and floating feedback.", body);
             GUILayout.Space(16);
 
-            GUILayout.BeginHorizontal();
-            DrawTab("End-phase effects", false);
-            DrawTab("Opponent choices", true);
-            GUILayout.EndHorizontal();
+            if (!stackControls)
+                GUILayout.BeginHorizontal();
+            float tabWidth = Mathf.Max(1f, stackControls ? contentWidth - 8f : (contentWidth - 12f) / 3f);
+            float tabHeight = !stackControls && contentWidth < 420f ? 52f : 44f;
+            DrawTab("End-phase effects", Scenario.EndPhase, tabWidth, tabHeight);
+            DrawTab("Opponent choices", Scenario.Opponent, tabWidth, tabHeight);
+            DrawTab("Feedback pool", Scenario.Feedback, tabWidth, tabHeight);
+            if (!stackControls)
+                GUILayout.EndHorizontal();
             GUILayout.Space(12);
 
-            if (showOpponent)
+            switch (scenario)
             {
-                DrawOpponent();
-            }
-            else
-            {
-                DrawPlayer();
+                case Scenario.Opponent:
+                    DrawOpponent();
+                    break;
+                case Scenario.Feedback:
+                    DrawFeedback(stackControls);
+                    break;
+                default:
+                    DrawPlayer();
+                    break;
             }
 
+            GUILayout.EndVertical();
             GUILayout.EndScrollView();
             GUILayout.EndArea();
         }
 
-        private void DrawTab(string label, bool opponent)
+        private void DrawTab(string label, Scenario selection, float width, float height)
         {
             Color oldBackground = GUI.backgroundColor;
-            GUI.backgroundColor = showOpponent == opponent ? Mint : Color.white;
-            if (GUILayout.Button(label, button, GUILayout.Height(44)))
+            GUI.backgroundColor = scenario == selection ? Mint : Color.white;
+            if (GUILayout.Button(label, button, GUILayout.Width(width), GUILayout.Height(height)))
             {
                 nextInteraction = () =>
                 {
-                    showOpponent = opponent;
+                    scenario = selection;
                     scrollPosition = Vector2.zero;
                 };
             }
@@ -151,6 +171,53 @@ namespace GameplaySamples.Combat
             GUILayout.Space(8);
             GUILayout.Label(opponentTrace, body);
             GUILayout.EndVertical();
+        }
+
+        private void DrawFeedback(bool stackControls)
+        {
+            GUILayout.BeginVertical(panel);
+            GUILayout.Label("Pool floating combat labels", heading);
+            GUILayout.Label("Eight events arrive at once. Nearby hits merge with hits, and heals with heals.", body);
+            if (!stackControls)
+                GUILayout.BeginHorizontal();
+            DrawAction("Send burst", true, () => FeedbackBurst.Send(feedback));
+            DrawAction("Advance tick", true, () => feedback.Advance());
+            DrawAction("Reset", true, () => feedback = FeedbackBurst.CreatePool());
+            if (!stackControls)
+                GUILayout.EndHorizontal();
+            GUILayout.Space(8);
+
+            int active = DrawFeedbackArena();
+            GUILayout.Label($"Active {active}/{feedback.Capacity}     Tick {feedback.Tick}", emphasis);
+            GUILayout.Label($"Merged {feedback.Merged}   Reused {feedback.Reused}   Dropped {feedback.Dropped}", body);
+            GUILayout.Label($"Labels expire after {feedback.LifetimeTicks} ticks. Send another burst to reuse freed slots.", body);
+            GUILayout.EndVertical();
+        }
+
+        private int DrawFeedbackArena()
+        {
+            Rect bounds = GUILayoutUtility.GetRect(1f, 124f, GUILayout.ExpandWidth(true));
+            GUI.Box(bounds, GUIContent.none);
+            int active = 0;
+            for (int index = 0; index < feedback.Capacity; index++)
+            {
+                if (!feedback.TryGetActive(index, out FeedbackLabel label))
+                    continue;
+
+                active++;
+                if (Event.current.type != EventType.Repaint)
+                    continue;
+
+                bool heal = label.Kind == FeedbackKind.Heal;
+                long age = feedback.Tick - (label.ExpiresAt - feedback.LifetimeTicks);
+                float x = Mathf.Lerp(bounds.xMin + 37f, bounds.xMax - 37f, label.X / 100f);
+                float y = Mathf.Lerp(bounds.yMin + 29f, bounds.yMax - 29f, label.Y / 100f) + (heal ? 14f : -14f) - age * 4f;
+                GUI.Label(new Rect(x - 37f, y - 11f, 74f, 22f),
+                    $"#{index + 1}  {(heal ? "+" : "-")}{label.Amount}", heal ? healLabel : damageLabel);
+            }
+            if (active == 0 && Event.current.type == EventType.Repaint)
+                GUI.Label(new Rect(bounds.x + 12f, bounds.y + 43f, bounds.width - 24f, 38f), "All slots available", body);
+            return active;
         }
 
         private void DrawAction(string label, bool enabled, Action interaction)
@@ -279,6 +346,9 @@ namespace GameplaySamples.Combat
             heading = MakeLabel(20, Paper, FontStyle.Bold);
             body = MakeLabel(15, Muted, FontStyle.Normal);
             emphasis = MakeLabel(16, Mint, FontStyle.Bold);
+            damageLabel = MakeLabel(17, Coral, FontStyle.Bold);
+            healLabel = MakeLabel(17, Mint, FontStyle.Bold);
+            damageLabel.alignment = healLabel.alignment = TextAnchor.MiddleCenter;
             panel = new GUIStyle(GUI.skin.box) { padding = new RectOffset(15, 15, 14, 14) };
             button = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true };
         }

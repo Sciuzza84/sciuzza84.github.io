@@ -21,7 +21,8 @@ namespace GameplaySamples
             new Entry("layered-layout", "LayeredLayout", "Layered layout", "Validate an artist's layout before it becomes a Unity level."),
             new Entry("round-planner", "RoundPlanner", "Round planner", "Balance target exposure across a finite catalog."),
             new Entry("match-recovery", "MatchRecovery", "Match recovery", "Drop a delivery and recover a scoreboard replica from a snapshot."),
-            new Entry("launch-handoff", "LaunchHandoff", "Launch handoff", "Compare two releases from guided motion to Rigidbody physics.")
+            new Entry("launch-handoff", "LaunchHandoff", "Launch handoff", "Compare two releases from guided motion to Rigidbody physics."),
+            new Entry("daily-challenge", "DailyChallenge", "Daily challenge", "Advance a simulated day and award a challenge once.")
         };
 
         private GUIStyle title;
