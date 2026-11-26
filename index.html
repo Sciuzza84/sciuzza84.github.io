@@ -32,6 +32,7 @@
     <nav aria-label="Main navigation">
       <a href="#work">Selected work</a>
       <a href="#experience">Games by company</a>
+      <a href="demos/">Unity samples</a>
       <a href="#collaborations">Collaborations</a>
       <a href="#teaching">Teaching</a>
       <a href="Cristiano-Piromalli-CV.pdf">CV <span class="file-type">PDF</span></a>
@@ -84,20 +85,32 @@
             <h3 id="digitalmoka-title">Digitalmoka</h3>
             <p class="company-role">Senior Unity Developer · previously Lead Developer</p>
           </div>
-          <p class="dates">2023–present</p>
+          <p class="dates"><time datetime="2023-03">March 2023</time>–present</p>
         </header>
-        <article id="burraco" class="case" aria-labelledby="burraco-title">
+        <article id="burraco" class="case case-with-proof" aria-labelledby="burraco-title">
           <div class="case-heading">
             <p class="tag">Unity · Mobile · Multiplayer</p>
             <h4 id="burraco-title" class="case-title">Burraco</h4>
             <a class="text-link" href="https://www.digitalmoka.com/burraco-online">Visit the official game page</a>
           </div>
           <div class="case-copy">
-            <p class="role">I was Lead Developer on this published mobile card game, defining the architecture and guiding the development work.</p>
-            <p>I wrote most of the backend and much of the Unity client, and supported live operations after launch.</p>
-            <h5>Helping players stay in sync</h5>
-            <p>I worked on keeping players in sync and restoring a match when a player’s local view fell behind.</p>
+            <p class="role">I led technical development for Burraco, an online card game with one-on-one and two-on-two matches.</p>
+            <p>I defined the architecture, guided other developers, and wrote most of the backend and much of the Unity client. I supported live operations after launch.</p>
+            <h5>Keeping online matches in sync</h5>
+            <p>I worked on keeping players' match states aligned and resuming play when a player's view of the match fell behind.</p>
+            <nav class="proof-links" aria-label="Burraco engineering sample">
+              <a class="text-link" href="demos/unity/?sample=match-recovery">Try match recovery</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Assets/Samples/MatchRecovery/Runtime/Core/MatchReplica.cs">Replica code</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Tests/MatchRecovery/Program.cs">Recovery checks</a>
+            </nav>
           </div>
+          <figure class="case-proof">
+            <a class="text-link" href="images/digitalmoka-match-recovery.png" aria-label="Open full-size screenshot of the match recovery sample">
+              <img src="images/digitalmoka-match-recovery.png" width="798" height="514" loading="lazy" decoding="async" alt="Both scoreboard replicas show revision 3 and score 6 to 3. The trace records a rejected old snapshot and an ignored duplicate delivery.">
+              <span>Open full-size screenshot</span>
+            </a>
+            <figcaption><strong>Match recovery · Independent scoreboard simulation.</strong> A covering snapshot restores the replica, and replaying the last delivery leaves the score unchanged.</figcaption>
+          </figure>
         </article>
         <article class="case" aria-labelledby="mobile-games-title">
           <div class="case-heading">
@@ -105,29 +118,45 @@
             <h4 id="mobile-games-title" class="case-title">Mobile puzzle games</h4>
           </div>
           <div class="case-copy">
-            <p class="role">As Senior Unity Developer, I now work with colleagues on a shared Unity framework and gameplay modules for hyper-casual mobile puzzle games.</p>
+            <p class="role">As Senior Unity Developer, I build gameplay for mobile puzzle games and improve the Unity framework our team shares across games.</p>
           </div>
         </article>
       </section>
 
       <section class="company" aria-labelledby="colto-title">
         <header class="company-heading">
-          <h3 id="colto-title">Colto</h3>
-          <p class="dates">2021–2023</p>
+          <div>
+            <h3 id="colto-title">Colto</h3>
+            <p class="company-role">Lead Developer</p>
+          </div>
+          <p class="dates"><time datetime="2021-04">April 2021</time>–<time datetime="2023-03">March 2023</time></p>
         </header>
-        <article id="diana" class="case" aria-labelledby="diana-title">
+        <article id="diana" class="case case-with-proof" aria-labelledby="diana-title">
         <div class="case-heading">
           <p class="tag">Unity · C# · Editor tooling</p>
           <h4 id="diana-title" class="case-title">Love, Diana<br>Hidden Objects</h4>
           <a class="text-link" href="https://apps.apple.com/es/app/love-diana-hidden-objects/id1580432439">View on the App Store</a>
         </div>
         <div class="case-copy">
-          <p class="role">I developed the game’s Unity software. Other contributors handled artwork and game design.</p>
+          <p class="role">I wrote the game's Unity code. Other contributors handled artwork and game design.</p>
           <h5>From layered artwork to playable levels</h5>
-          <p>Our artist hid each object in the scene by placing it carefully against the background. I built a Unity Editor tool that reads the named layers in a Photoshop file and preserves each object's position. With one click, it builds the level prefab and its ScriptableObject data. We could use the artist's layout directly in the game.</p>
+          <p>The artist placed each object against the background in a layered Photoshop file. I built a Unity Editor tool that used naming conventions to turn the imported artwork into a level prefab and its data in one command, preserving the artist's layout.</p>
           <h5>Generating varied rounds from a finite catalog</h5>
-          <p>The round generator favors objects and variants that have appeared less often. It avoids duplicates within each target group, chooses distractors separately, and saves the round configuration for the game to load.</p>
+          <p>I built a round generator that favors less-used objects and variants, keeps each target group free of duplicates, and selects distractors separately. It saves the resulting configuration so the game can load the same round again.</p>
+          <nav class="proof-links" aria-label="Diana engineering sample">
+            <a class="text-link" href="demos/unity/?sample=layered-layout">Try the layered layout</a>
+            <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Assets/Samples/LayeredLayout/Editor/LayeredLayoutImporter.cs">Importer code</a>
+            <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Tests/LayeredLayout/Program.cs">Layout checks</a>
+            <a class="text-link" href="demos/unity/?sample=round-planner">Try round planning</a>
+          </nav>
         </div>
+        <figure class="case-proof">
+          <a class="text-link" href="images/colto-layered-layout.png" aria-label="Open full-size screenshot of the layered layout sample">
+            <img src="images/colto-layered-layout.png" width="1200" height="783" loading="lazy" decoding="async" alt="The layered layout sample shows a moved beacon in the map and its updated pixel coordinates in the level data.">
+            <span>Open full-size screenshot</span>
+          </a>
+          <figcaption><strong>Layered layout · Independent Unity sample.</strong> Move the beacon and compare its placement with the layer data. Invalid input leaves the last valid layout in place.</figcaption>
+        </figure>
         </article>
         <article class="case" aria-labelledby="maintenance-title">
           <div class="case-heading">
@@ -137,9 +166,9 @@
           <div class="case-copy">
             <p class="role">I helped maintain three other games at Colto.</p>
             <ul class="project-links">
-              <li><a class="text-link" href="https://www.colto.com/portfolio-item/ckn-toys-car-hero/">CKN Toys: Car Hero Run</a></li>
-              <li><a class="text-link" href="https://www.colto.com/portfolio-item/hidden-pictures-puzzle-play/">Hidden Pictures Puzzle Play</a></li>
-              <li><a class="text-link" href="https://www.colto.com/portfolio-item/love-diana-dress-up/">Love, Diana Fashion Fabulous</a></li>
+              <li><a class="text-link" href="https://www.colto.com/portfolio-item/ckn-toys-car-hero/">CKN Toys: Car Hero Run</a> · Updated timed rewards and mobile dependencies.</li>
+              <li><a class="text-link" href="https://www.colto.com/portfolio-item/hidden-pictures-puzzle-play/">Hidden Pictures Puzzle Play</a> · Updated the subscription flow and added a way to continue playing without subscribing.</li>
+              <li><a class="text-link" href="https://www.colto.com/portfolio-item/love-diana-dress-up/">Love, Diana Fashion Fabulous</a> · Upgraded Unity and mobile SDK dependencies.</li>
             </ul>
           </div>
         </article>
@@ -173,10 +202,10 @@
           </div>
           <figure class="case-proof">
             <a class="text-link" href="images/affinity-content-updates.png" aria-label="Open full-size screenshot of Content Updates">
-              <img src="images/affinity-content-updates.png" width="1200" height="740" loading="lazy" decoding="async" alt="Content Updates shows version 2 installed with one file downloaded and two reused.">
+              <img src="images/affinity-content-updates.png" width="1280" height="783" loading="lazy" decoding="async" alt="Content Updates keeps version 2 installed after the second file of the version 3 update fails verification.">
               <span>Open full-size screenshot</span>
             </a>
-            <figcaption><strong>Content Updates · Independent Unity Web sample.</strong> Applying v2 downloads one file and reuses two. The sample uses simulated storage.</figcaption>
+            <figcaption><strong>Content Updates · Independent Unity Web sample.</strong> The first file is prepared, then the second fails verification. The simulated installation stays on v2.</figcaption>
           </figure>
         </article>
         <article id="bounce" class="case case-with-proof" aria-labelledby="bounce-title">
@@ -201,6 +230,16 @@
             </a>
             <figcaption><strong>Level Editor · Independent Unity Editor sample.</strong> Copy a template, edit the draft and inspect the live preview. Save and reopen to restore the layout.</figcaption>
           </figure>
+        </article>
+        <article id="bomb-jump" class="case" aria-labelledby="bomb-jump-title">
+          <div class="case-heading">
+            <p class="tag">Unity · C# · Gameplay physics</p>
+            <h4 id="bomb-jump-title" class="case-title">Bomb Jump!</h4>
+          </div>
+          <div class="case-copy">
+            <p class="role">I built track generation and worked on player movement and input for this mobile ski-jump game.</p>
+            <p>I tuned the handoff from guided movement to Rigidbody physics during launch.</p>
+          </div>
         </article>
       </section>
 
