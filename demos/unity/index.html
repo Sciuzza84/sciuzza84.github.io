@@ -8,7 +8,9 @@
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     html, body { margin: 0; width: 100%; height: 100%; background: #141c22; color: #e7e6dc; }
-    body { display: flex; flex-direction: column; font: 1rem/1.5 system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; font: 1rem/1.5 system-ui, sans-serif;
+           padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+                    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
     .sample-nav { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; padding: .55rem 1rem;
                   background: #1c2a30; border-bottom: 1px solid #54716c; }
     .sample-nav a { color: #bfe8dc; text-underline-offset: .2em; }
@@ -17,7 +19,11 @@
     canvas { display: block; width: 100%; height: 100%; }
     #status { position: absolute; inset: 0; display: grid; place-content: center; gap: .75rem;
               padding: 2rem; font: 1rem/1.5 system-ui, sans-serif; text-align: center; pointer-events: none; }
-    #status[hidden] { display: none; } progress { width: min(15rem, 75vw); margin: auto; accent-color: #78bfaa; }
+    #status[hidden], #retry[hidden] { display: none; }
+    progress { width: min(15rem, 75vw); margin: auto; accent-color: #78bfaa; }
+    #retry { justify-self: center; padding: .5rem 1rem; pointer-events: auto; cursor: pointer;
+             font: inherit; color: #bfe8dc; border: 1px solid #78bfaa; border-radius: .25rem; background: #1c2a30; }
+    #retry:focus-visible { outline: 2px solid #bfe8dc; outline-offset: 3px; }
   </style>
 </head>
 <body>
@@ -28,32 +34,52 @@
   </nav>
   <main>
     <canvas id="player" tabindex="0" aria-label="Interactive Unity sample"></canvas>
-    <div id="status" role="status"><span>Loading Unity sample…</span><progress max="1" value="0"></progress></div>
+    <div id="status">
+      <span role="status">Loading Unity sample…</span>
+      <progress aria-label="Unity player loading progress" max="1" value="0"></progress>
+      <button id="retry" type="button" hidden>Reload sample</button>
+    </div>
   </main>
   <script src="Build/Gallery.loader.js"></script>
   <script>
     const canvas = document.getElementById('player');
     const status = document.getElementById('status');
     const progress = status.querySelector('progress');
+    const retry = document.getElementById('retry');
+    let failed = false;
+    retry.addEventListener('click', () => window.location.reload());
+
+    function showError(error) {
+      console.error('Unity sample startup failed:', error);
+      if (failed || status.hidden) return;
+      failed = true;
+      const reason = /not support WebGL|WebGL is not supported/i.test(String(error))
+        ? 'WebGL is unavailable in this browser.'
+        : 'A required player file could not be loaded.';
+      status.querySelector('span').textContent = 'The Unity sample could not start. ' + reason;
+      progress.hidden = true;
+      retry.hidden = false;
+    }
+
     const config = {
       dataUrl: "Build/Gallery.data.unityweb",
       frameworkUrl: "Build/Gallery.framework.js.unityweb",
       codeUrl: "Build/Gallery.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "Cristiano Piromalli",
-      productName: "Dungeon Explorer",
-      productVersion: "0.1.0"
+      productName: "Unity gameplay samples",
+      productVersion: "0.1.0",
+      showBanner: (message, type) => {
+        if (type === 'error') showError(message);
+        else if (type === 'warning') console.warn(message);
+      }
     };
-    function showError(message) {
-      status.querySelector('span').textContent = 'The Unity sample could not start. ' + message;
-      progress.hidden = true;
-    }
     if (typeof createUnityInstance === 'function') {
       createUnityInstance(canvas, config, value => { progress.value = value; })
-        .then(() => { status.hidden = true; })
+        .then(() => { if (!failed) status.hidden = true; })
         .catch(showError);
     } else {
-      showError('Check that the page is being served over HTTP.');
+      showError('The Unity loader did not run.');
     }
   </script>
 </body>
