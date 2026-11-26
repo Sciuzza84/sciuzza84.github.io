@@ -12,4 +12,4 @@ The weights choose the initial straight length of a side path. Placement still n
 
 [Generator](Runtime/Core/DungeonGenerator.cs) · [Preset checks and sampling](Runtime/Core/DungeonBranchPreset.cs) · [Automated checks](../../../Tests/Dungeon/Program.cs)
 
-Run the checks from the repository root with `dotnet run --project Tests/Dungeon/Dungeon.Checks.csproj -c Release`.
+Run the checks from the Unity project directory (`samples/` in the portfolio repository) with `dotnet run --project Tests/Dungeon/Dungeon.Checks.csproj -c Release`.

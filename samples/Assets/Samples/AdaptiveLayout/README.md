@@ -21,6 +21,6 @@ The controller applies on enable and refreshes when the camera viewport, screen 
 
 ## Checks
 
-From the repository root run `dotnet run --project Tests/AdaptiveLayout/AdaptiveLayout.Checks.csproj -c Release`. The checks include asymmetric insets, a nonzero viewport origin, containment, repeated orientation changes, and transient invalid measurements.
+From the Unity project directory (`samples/` in the portfolio repository) run `dotnet run --project Tests/AdaptiveLayout/AdaptiveLayout.Checks.csproj -c Release`. The checks include asymmetric insets, a nonzero viewport origin, containment, repeated orientation changes, and transient invalid measurements.
 
 Run the Unity Editor in batch mode with `-executeMethod GameplaySamples.AdaptiveLayout.Editor.AdaptiveLayoutVerification.VerifySample` to check an actual Camera and RectTransform with injected viewport and safe-area measurements. It verifies setup, camera and HUD transforms, an invalid resize, rotation, change detection and steady inputs.

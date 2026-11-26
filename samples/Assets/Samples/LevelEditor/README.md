@@ -12,4 +12,4 @@ The tool keeps the current board if it encounters an invalid draft. The underlyi
 - [Board rules](Runtime/Core/LevelBoard.cs)
 - [Asset verification](Editor/LevelEditorVerification.cs)
 
-Run `dotnet run --project Tests/LevelEditor/LevelEditor.Checks.csproj -c Release` from the repository root. The Editor batch check `GameplaySamples.LevelEditor.Editor.LevelEditorVerification.VerifySample` writes a temporary asset, reloads it from disk and verifies the existing draft format, template independence and an edit that keeps the asset GUID.
+Run `dotnet run --project Tests/LevelEditor/LevelEditor.Checks.csproj -c Release` from the Unity project directory (`samples/` in the portfolio repository). The Editor batch check `GameplaySamples.LevelEditor.Editor.LevelEditorVerification.VerifySample` writes a temporary asset, reloads it from disk and verifies the existing draft format, template independence and an edit that keeps the asset GUID.

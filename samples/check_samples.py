@@ -24,7 +24,7 @@ def main():
 
     dotnet = shutil.which("dotnet")
     if not dotnet:
-        parser.error("Install the .NET 8 SDK or a compatible newer SDK and runtime.")
+        parser.error("Install the .NET 8 SDK, or a newer SDK with the .NET 8 runtime.")
 
     selected = list(dict.fromkeys(options.samples)) if options.samples else list(projects)
     failed = []

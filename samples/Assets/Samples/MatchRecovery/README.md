@@ -17,6 +17,8 @@ The reducer applies the next consecutive event. Earlier events are idempotent an
 
 [Replica reducer](Runtime/Core/MatchReplica.cs) · [Unity view](Runtime/View/MatchRecoveryExplorer.cs) · [Checks](../../../Tests/MatchRecovery/Program.cs)
 
+Run the checks from the Unity project directory (`samples/` in the portfolio repository).
+
 ```sh
 dotnet run --project Tests/MatchRecovery/MatchRecovery.Checks.csproj -c Release
 ```

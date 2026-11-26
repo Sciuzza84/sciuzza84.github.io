@@ -10,4 +10,4 @@ The demo uses a continuous 1.5-second window at frame quality of at least 70% an
 
 [Gate and anchor math](Runtime/Core/PlacementGate.cs) · [View and replay](Runtime/View/ArPlacementExplorer.cs) · [Checks](../../../Tests/ArPlacement/Program.cs)
 
-From the repository root, run `dotnet run --project Tests/ArPlacement/ArPlacement.Checks.csproj -c Release`.
+From the Unity project directory (`samples/` in the portfolio repository), run `dotnet run --project Tests/ArPlacement/ArPlacement.Checks.csproj -c Release`.

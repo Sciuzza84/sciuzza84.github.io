@@ -12,4 +12,4 @@ Select **Accept next round** twice. Key and Shell enter round 2, then Kite and C
 
 [The planner](Runtime/Core/RoundPlanner.cs) ranks families by target frequency and variants by frequency within their family. Equal counts follow catalog order. Distractors use the next families in that order and leave target history unchanged. Validation runs before either the counters or the in-memory round changes. The accepted plan contains read-only lists.
 
-From the repository root run `dotnet run --project Tests/RoundPlanner/RoundPlanner.Checks.csproj -c Release`. [Checks](../../../Tests/RoundPlanner/Program.cs) verify the four-round progression, distinct families, stable replay, rejected quotas, and repeatability.
+From the Unity project directory (`samples/` in the portfolio repository) run `dotnet run --project Tests/RoundPlanner/RoundPlanner.Checks.csproj -c Release`. [Checks](../../../Tests/RoundPlanner/Program.cs) verify the four-round progression, distinct families, stable replay, rejected quotas, and repeatability.

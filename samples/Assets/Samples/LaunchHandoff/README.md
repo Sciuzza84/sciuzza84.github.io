@@ -17,9 +17,9 @@ The trace keeps the actual sampled trajectory. Compare horizontal travel after a
 
 The guide computes velocity from the full displacement and duration. The Unity driver sets each body to the exact endpoint, makes it dynamic, then assigns its release velocity. It records Rigidbody position and velocity from completed physics steps and freezes the view at the end for inspection. The sample isolates linear velocity with freely falling bodies.
 
-Run `dotnet run --project Tests/LaunchHandoff/LaunchHandoff.Checks.csproj -c Release` from the repository root. The checks cover the guide endpoints, step-size independence of release velocity, both release modes, and invalid inputs.
+Run `dotnet run --project Tests/LaunchHandoff/LaunchHandoff.Checks.csproj -c Release` from the Unity project directory (`samples/` in the portfolio repository). The checks cover the guide endpoints, step-size independence of release velocity, both release modes, and invalid inputs.
 
-Run a separate Unity batch invocation from the repository root to verify the two Rigidbody trajectories with actual 0.02-second physics steps. The log reports the displacement after 0.60 seconds.
+Run a separate Unity batch invocation from the Unity project directory (`samples/` in the portfolio repository) to verify the two Rigidbody trajectories with actual 0.02-second physics steps. The log reports the displacement after 0.60 seconds.
 
 ```sh
 Unity -batchmode -nographics -quit -projectPath . -executeMethod GameplaySamples.LaunchHandoff.Editor.LaunchHandoffVerification.VerifySample -logFile -
