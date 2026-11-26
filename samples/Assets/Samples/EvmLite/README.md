@@ -32,3 +32,11 @@ Each event type caches a snapshot of its subscription list. Adding or removing a
 ## Verify
 
 From the Unity project directory (`samples/` in the portfolio repository), run `dotnet run --project Tests/EvmLite/EvmLite.Checks.csproj -c Release`. The [checks](../../../Tests/EvmLite/Program.cs) cover exact typing, repeated room replacement, duplicate subscriptions, and nested publishes during scope changes. The .NET check also requires zero managed bytes over 10,000 warmed publishes with two stable subscribers and allocation-free callbacks. Profile your Unity player separately for its performance characteristics. The Unity scene lets you observe the real scene load and unload.
+
+For the actual Unity lifecycle, run the [Play Mode verifier](Editor/EvmLiteVerification.cs) with the Unity executable for this project:
+
+```sh
+Unity -batchmode -nographics -projectPath "." -executeMethod GameplaySamples.EvmLite.Editor.EvmLiteVerification.VerifyLifecycle -logFile -
+```
+
+The command enters Play Mode, configures an initially inactive receiver, and checks activation, repeated setup, disable, reenable and additive unload. It exits with `0` on success or `1` on failure or timeout. The verifier is batch-only and handles its own exit after the Play Mode callbacks.
