@@ -81,6 +81,7 @@ h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); letter-spacing: -.04em; line-height:
 .case-copy p + p { margin-top: .8rem; }
 .case-copy .role { font-weight: 650; }
 .case-copy h5 { margin-block: 1rem .4rem; font-size: 1.05rem; line-height: 1.4; }
+.proof-links { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; margin-top: .9rem; font-size: .925rem; }
 
 .company { margin-top: 2rem; }
 .company-links { display: flex; flex-wrap: wrap; gap: .25rem 1.4rem; margin-top: .9rem; }
@@ -90,6 +91,17 @@ h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); letter-spacing: -.04em; line-height:
 .company-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .4rem 1rem; padding-block: 1rem; }
 .company-heading h3 { font-size: clamp(1.4rem, 3vw, 1.7rem); letter-spacing: -.025em; }
 .company-role { margin-top: .3rem; color: var(--muted); }
+.eggon-intro { max-width: 64ch; margin-bottom: 1rem; color: var(--muted); }
+:is(.eggon .case, .case-with-proof) { grid-template-areas: "heading copy" "proof copy"; grid-template-rows: auto 1fr; row-gap: .85rem; align-items: start; }
+:is(.eggon .case, .case-with-proof) .case-heading { grid-area: heading; }
+:is(.eggon .case, .case-with-proof) .case-copy { grid-area: copy; }
+:is(.eggon .case, .case-with-proof) .case-copy h5:first-child { margin-top: 0; }
+:is(.eggon-proof, .case-proof) { grid-area: proof; margin: 0; }
+:is(.eggon-proof, .case-proof) a { display: block; border: 1px solid var(--line); }
+:is(.eggon-proof, .case-proof) img { display: block; width: 100%; height: auto; }
+.case-proof a span { display: block; padding: .35rem .65rem; font-size: .875rem; }
+:is(.eggon-proof, .case-proof) figcaption { margin-top: .55rem; color: var(--muted); font-size: .875rem; line-height: 1.5; }
+:is(.eggon-proof, .case-proof) figcaption strong { color: var(--ink); }
 .project-links { margin: .75rem 0 0; padding-left: 1.2rem; }
 .project-links li + li { margin-top: .5rem; }
 .collaborations > .section-heading { margin-bottom: 1.5rem; }
@@ -106,6 +118,7 @@ h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); letter-spacing: -.04em; line-height:
   .case-index, .case { grid-template-columns: 1fr; }
   .case-index a { min-height: 0; }
   .case-copy h5 { margin-top: .6rem; }
+  :is(.eggon .case, .case-with-proof) { grid-template-areas: "heading" "copy" "proof"; grid-template-rows: auto; }
 }
 
 @media print {

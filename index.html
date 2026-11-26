@@ -63,7 +63,7 @@
       <nav aria-label="Case studies" class="case-index">
         <a href="#diana"><span class="tag">Editor tooling</span><strong>Love, Diana Hidden Objects</strong></a>
         <a href="#burraco"><span class="tag">Multiplayer</span><strong>Burraco</strong></a>
-        <a href="#don-ay"><span class="tag">Live content</span><strong>Don-Ay: Pet Land</strong></a>
+        <a href="#don-ay"><span class="tag">Content delivery</span><strong>Don-Ay: Pet Land</strong></a>
       </nav>
     </section>
 
@@ -75,7 +75,7 @@
         <a class="text-link" href="#digitalmoka-title">Digitalmoka</a>
         <a class="text-link" href="#colto-title">Colto</a>
         <a class="text-link" href="#affinity-title">Affinity Project</a>
-        <a class="text-link" href="#eggon-title">Eggon</a>
+        <a class="text-link" href="#eggon-title">Eggon Srl</a>
       </nav>
 
       <section class="company" aria-labelledby="digitalmoka-title">
@@ -147,59 +147,122 @@
 
       <section class="company" aria-labelledby="affinity-title">
         <header class="company-heading">
-          <h3 id="affinity-title">Affinity Project</h3>
-          <p class="dates">2018–2021</p>
+          <div>
+            <h3 id="affinity-title">Affinity Project</h3>
+            <p class="company-role">Unity Back-End Developer, then Unity Lead Programmer and Unity Technical Project Manager</p>
+          </div>
+          <p class="dates"><time datetime="2018-02">February 2018</time>–<time datetime="2021-04">April 2021</time></p>
         </header>
-        <article id="don-ay" class="case" aria-labelledby="don-ay-title">
-        <div class="case-heading">
-          <p class="tag">Unity · Firebase · iOS &amp; Android</p>
-          <h4 id="don-ay-title" class="case-title">Don-Ay: Pet Land</h4>
-        </div>
-        <div class="case-copy">
-          <p class="role">I rebuilt the Unity client and Firebase backend when I joined the project.</p>
-          <h5>Updating game content selectively</h5>
-          <p>I used a versioned catalog with separate entries for iOS and Android. The client compares the catalog with local versions and downloads the bundles it needs from Firebase Storage.</p>
-        </div>
+        <article id="don-ay" class="case case-with-proof" aria-labelledby="don-ay-title">
+          <div class="case-heading">
+            <p class="tag">Unity · Firebase · iOS &amp; Android</p>
+            <h4 id="don-ay-title" class="case-title">Don-Ay: Pet Land</h4>
+            <a class="text-link" href="https://novyunlimited.com/project/don-ay-pet-land/">Don-Ay press kit</a>
+          </div>
+          <div class="case-copy">
+            <h5>Updating game content with selective downloads</h5>
+            <p>I rebuilt the Unity client and Firebase backend. I built a versioned catalog with separate entries for Android and iOS. The client compared the catalog with its local versions and fetched the AssetBundles it needed from Firebase Storage. That let us deliver extra equipment and characters without shipping a new app build.</p>
+            <h5>Adapting layouts to mobile screens</h5>
+            <p>I built an aspect-ratio tool that adjusted scene objects and UI layouts for different mobile screen sizes.</p>
+            <nav class="proof-links" aria-label="Don-Ay engineering samples">
+              <a class="text-link" href="demos/unity/?sample=content-updates">Try content updates</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Assets/Samples/ContentUpdates/Runtime/Core/ContentUpdater.cs">Updater code</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Tests/ContentUpdates/Program.cs">Update checks</a>
+              <a class="text-link" href="demos/unity/?sample=adaptive-layout">Try adaptive layout</a>
+            </nav>
+          </div>
+          <figure class="case-proof">
+            <a class="text-link" href="images/affinity-content-updates.png" aria-label="Open full-size screenshot of Content Updates">
+              <img src="images/affinity-content-updates.png" width="1200" height="740" loading="lazy" decoding="async" alt="Content Updates shows version 2 installed with one file downloaded and two reused.">
+              <span>Open full-size screenshot</span>
+            </a>
+            <figcaption><strong>Content Updates · Independent Unity Web sample.</strong> Applying v2 downloads one file and reuses two. The sample uses simulated storage.</figcaption>
+          </figure>
         </article>
-        <article id="bounce" class="case" aria-labelledby="bounce-title">
+        <article id="bounce" class="case case-with-proof" aria-labelledby="bounce-title">
           <div class="case-heading">
             <p class="tag">Unity · C# · Level tools</p>
             <h4 id="bounce-title" class="case-title">Bounce That Bird!</h4>
-            <a class="text-link" href="https://android-developers.googleblog.com/2020/03/meet-finalists-of-google-play-indie.html">See the Google Play festival finalists</a>
+            <a class="text-link" href="https://android-developers.googleblog.com/2020/03/meet-finalists-of-google-play-indie.html">Google Play Indie Games Festival 2020 finalists</a>
           </div>
           <div class="case-copy">
-            <p class="role">I wrote the Unity game code, including the level editor. The game was a European finalist in the 2020 Google Play Indie Games Festival.</p>
-            <h5>Authoring levels for two game modes</h5>
-            <p>I built an Editor workflow for creating and previewing Story and Endless levels. Level authors could start from a template and preview obstacles and collectibles in the Unity scene.</p>
+            <h5>Authoring levels for Story and Endless modes</h5>
+            <p>I wrote the Unity game code and built a level editor that let designers start from a template and preview obstacles and collectibles in the Unity scene. The editor exposed difficulty groups that controlled which obstacles and collectibles the game could spawn. The game was a European finalist in the 2020 Google Play Indie Games Festival.</p>
+            <nav class="proof-links" aria-label="Bounce That Bird! engineering sample">
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/tree/main/samples/Assets/Samples/LevelEditor#level-editor">Run in Unity Editor</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Assets/Samples/LevelEditor/Editor/LevelEditorWindow.cs">Editor code</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Tests/LevelEditor/Program.cs">Level Editor checks</a>
+            </nav>
           </div>
+          <figure class="case-proof">
+            <a class="text-link" href="images/affinity-level-editor.png" aria-label="Open full-size screenshot of the Level Editor">
+              <img src="images/affinity-level-editor.png" width="778" height="360" loading="lazy" decoding="async" alt="The Unity Editor shows the Broken Bridge template, the edited draft, its live preview and the Draft reopened message.">
+              <span>Open full-size screenshot</span>
+            </a>
+            <figcaption><strong>Level Editor · Independent Unity Editor sample.</strong> Copy a template, edit the draft and inspect the live preview. Save and reopen to restore the layout.</figcaption>
+          </figure>
         </article>
       </section>
 
-      <section class="company" aria-labelledby="eggon-title">
+      <section class="company eggon" aria-labelledby="eggon-title">
         <header class="company-heading">
-          <h3 id="eggon-title">Eggon</h3>
-          <p class="dates">2017</p>
+          <div>
+            <h3 id="eggon-title">Eggon Srl</h3>
+            <p class="company-role">Unity Game Developer</p>
+          </div>
+          <p class="dates"><time datetime="2017-03">March</time>–<time datetime="2017-10">October 2017</time></p>
         </header>
+        <p class="eggon-intro">I built procedural dungeon layouts and Editor tools for <em>Lost in the Dungeon</em> and contributed to mobile AR and turn-based combat in <em>Diamonst</em>.</p>
         <article id="lost-in-the-dungeon" class="case" aria-labelledby="dungeon-title">
           <div class="case-heading">
-            <p class="tag">Unity · Procedural generation</p>
+            <p class="tag">Unity · Procedural generation · Editor tools</p>
             <h4 id="dungeon-title" class="case-title">Lost in the Dungeon</h4>
             <a class="text-link" href="https://store.steampowered.com/app/780580/Lost_in_the_Dungeon/">View on Steam</a>
           </div>
           <div class="case-copy">
-            <p class="role">I built a procedural dungeon generator and fixed gameplay bugs.</p>
-            <h5>Keeping branching paths apart</h5>
-            <p>The generator creates a main route and side routes. It checks available space at branching points and adjusts the layout to keep outgoing paths apart.</p>
+            <h5>A route to the boss with room for branches</h5>
+            <p>I built the branching dungeon generator and its 2D map. The generator lays out a route to the boss and checks available space as it adds side paths. I added Unity Editor checks for duplicate options and generation weights.</p>
+            <h5>Equipping cards and restoring deck choices</h5>
+            <p>I built deck-building rules for equipping card copies and restored the selected class and ability when players returned to the screen.</p>
+            <h5>Stopping the enemy response after defeat</h5>
+            <p>I fixed a turn-resolution bug that let the enemy act after an end-of-phase effect had defeated the player.</p>
+            <nav class="proof-links" aria-label="Lost in the Dungeon engineering samples">
+              <a class="text-link" href="demos/unity/?sample=dungeon">Play the dungeon demo</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Assets/Samples/Dungeon/Runtime/Core/DungeonGenerator.cs">Generator code</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Tests/Dungeon/Program.cs">Dungeon checks</a>
+              <a class="text-link" href="demos/unity/?sample=combat">Try turn-based combat</a>
+            </nav>
           </div>
+          <figure class="eggon-proof">
+            <a href="images/eggon-dungeon.png" aria-label="Open the dungeon generator screenshot at full size">
+              <img src="images/eggon-dungeon.png" width="1200" height="740" loading="lazy" decoding="async" alt="Seed 19 with a mint path to the boss, amber side paths and a coral outline around the first rejected cell.">
+            </a>
+            <figcaption><strong>Independent Unity recreation.</strong> Seed 19 with four branches. The coral outline marks where a candidate branch touched another route.</figcaption>
+          </figure>
         </article>
         <article id="diamonst" class="case" aria-labelledby="diamonst-title">
           <div class="case-heading">
             <p class="tag">Unity · Vuforia · Augmented reality</p>
             <h4 id="diamonst-title" class="case-title">Diamonst</h4>
+            <a class="text-link" href="https://www.prnewswire.com/news-releases/new-smartglasses-lens-technology-input-devices-wearable-gaming-system-and-more-announced-at-awe-usa-2017-300467391.html">AWE USA 2017 announcement</a>
           </div>
           <div class="case-copy">
-            <p class="role">I worked on Vuforia integration for this augmented reality game during its beta development.</p>
+            <h5>Setting up a duel in mobile AR</h5>
+            <p>I integrated turn-based duels with Vuforia during the mobile AR beta. I used frame quality and device tilt to guide target setup, then fixed the fighters’ scale and spacing relative to the target.</p>
+            <h5>Choosing when to act</h5>
+            <p>I refined the opponent’s decisions about when to wait for mana and which status moves could still change a stat.</p>
+            <nav class="proof-links" aria-label="Diamonst engineering sample">
+              <a class="text-link" href="demos/unity/?sample=ar-placement">Try the AR simulator</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Assets/Samples/ArPlacement/Runtime/Core/PlacementGate.cs">Placement code</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Tests/ArPlacement/Program.cs">Placement checks</a>
+            </nav>
           </div>
+          <figure class="eggon-proof">
+            <a href="images/eggon-ar-placement.png" aria-label="Open the AR placement screenshot at full size">
+              <img src="images/eggon-ar-placement.png" width="1200" height="740" loading="lazy" decoding="async" alt="Two fighters positioned on opposite sides of a confirmed anchor in the AR placement simulator.">
+            </a>
+            <figcaption><strong>Independent Unity simulation.</strong> Simulated inputs guide anchor confirmation. The two fighters share the confirmed anchor, and their spacing and scale can be adjusted independently.</figcaption>
+          </figure>
         </article>
       </section>
     </section>
