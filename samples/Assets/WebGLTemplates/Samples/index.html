@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Unity gameplay samples</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; background: #141c22; color: #e7e6dc; }
+    body { display: flex; flex-direction: column; font: 1rem/1.5 system-ui, sans-serif; }
+    .sample-nav { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; padding: .55rem 1rem;
+                  background: #1c2a30; border-bottom: 1px solid #54716c; }
+    .sample-nav a { color: #bfe8dc; text-underline-offset: .2em; }
+    .sample-nav a:focus-visible { outline: 2px solid #bfe8dc; outline-offset: 3px; }
+    main { position: relative; flex: 1; min-height: 0; }
+    canvas { display: block; width: 100%; height: 100%; }
+    #status { position: absolute; inset: 0; display: grid; place-content: center; gap: .75rem;
+              padding: 2rem; font: 1rem/1.5 system-ui, sans-serif; text-align: center; pointer-events: none; }
+    #status[hidden] { display: none; } progress { width: min(15rem, 75vw); margin: auto; accent-color: #78bfaa; }
+  </style>
+</head>
+<body>
+  <nav class="sample-nav" aria-label="Sample navigation">
+    <a href="./">Sample gallery</a>
+    <a href="https://github.com/Sciuzza84/sciuzza84.github.io/tree/main/samples">Code and checks</a>
+    <a href="https://sciuzza84.github.io/#experience">Portfolio</a>
+  </nav>
+  <main>
+    <canvas id="player" tabindex="0" aria-label="Interactive Unity sample"></canvas>
+    <div id="status" role="status"><span>Loading Unity sample…</span><progress max="1" value="0"></progress></div>
+  </main>
+  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+  <script>
+    const canvas = document.getElementById('player');
+    const status = document.getElementById('status');
+    const progress = status.querySelector('progress');
+    const config = {
+#if PROGRESSIVE_ASSET_LOADING
+      primaryDataUrls: {{{ JSON.stringify(PRIMARY_DATA_FILES) }}},
+      secondaryDataUrls: {{{ JSON.stringify(SECONDARY_DATA_FILES) }}},
+#else
+      dataUrl: "Build/{{{ DATA_FILENAME }}}",
+#endif
+      frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+      codeUrl: "Build/{{{ CODE_FILENAME }}}",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+      productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+      productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}}
+    };
+    function showError(message) {
+      status.querySelector('span').textContent = 'The Unity sample could not start. ' + message;
+      progress.hidden = true;
+    }
+    if (typeof createUnityInstance === 'function') {
+      createUnityInstance(canvas, config, value => { progress.value = value; })
+        .then(() => { status.hidden = true; })
+        .catch(showError);
+    } else {
+      showError('Check that the page is being served over HTTP.');
+    }
+  </script>
+</body>
+</html>
