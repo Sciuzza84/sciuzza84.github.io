@@ -119,6 +119,7 @@
           </div>
           <div class="case-copy">
             <p class="role">As Senior Unity Developer, I build gameplay for mobile puzzle games and improve the Unity framework our team shares across games.</p>
+            <p>My work includes reusable player progression and recurring challenge features.</p>
           </div>
         </article>
       </section>
@@ -231,7 +232,7 @@
             <figcaption><strong>Level Editor · Independent Unity Editor sample.</strong> Copy a template, edit the draft and inspect the live preview. Save and reopen to restore the layout.</figcaption>
           </figure>
         </article>
-        <article id="bomb-jump" class="case" aria-labelledby="bomb-jump-title">
+        <article id="bomb-jump" class="case case-with-proof" aria-labelledby="bomb-jump-title">
           <div class="case-heading">
             <p class="tag">Unity · C# · Gameplay physics</p>
             <h4 id="bomb-jump-title" class="case-title">Bomb Jump!</h4>
@@ -239,7 +240,19 @@
           <div class="case-copy">
             <p class="role">I built track generation and worked on player movement and input for this mobile ski-jump game.</p>
             <p>I tuned the handoff from guided movement to Rigidbody physics during launch.</p>
+            <nav class="proof-links" aria-label="Bomb Jump! engineering sample">
+              <a class="text-link" href="demos/unity/?sample=launch-handoff">Try the Rigidbody comparison</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Assets/Samples/LaunchHandoff/Runtime/View/LaunchHandoffExplorer.cs">Rigidbody driver</a>
+              <a class="text-link" href="https://github.com/Sciuzza84/sciuzza84.github.io/blob/main/samples/Tests/LaunchHandoff/Program.cs">Launch checks</a>
+            </nav>
           </div>
+          <figure class="case-proof">
+            <a class="text-link" href="images/affinity-launch-handoff.png" aria-label="Open full-size screenshot of the Rigidbody comparison">
+              <img src="images/affinity-launch-handoff.png" width="905" height="505" loading="lazy" decoding="async" alt="The two Rigidbody traces compare zero and preserved release velocities, showing 0.00 and 2.40 metres of horizontal travel.">
+              <span>Open full-size screenshot</span>
+            </a>
+            <figcaption><strong>Launch handoff · Independent Rigidbody sample.</strong> Both bodies follow the same guide. The body that keeps its incoming velocity travels 2.40 m horizontally after release.</figcaption>
+          </figure>
         </article>
       </section>
 
