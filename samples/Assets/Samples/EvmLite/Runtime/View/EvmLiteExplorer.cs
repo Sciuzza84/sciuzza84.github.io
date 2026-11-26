@@ -9,6 +9,12 @@ namespace GameplaySamples.EvmLite
     {
         private const string RoomA = "EventRoomA";
         private const string RoomB = "EventRoomB";
+        private const float DefaultTraceRowHeight = 34f;
+        private static readonly GUIContent Heading = new GUIContent("EVM Lite");
+        private static readonly GUIContent SceneDescription = new GUIContent(
+            "Switch rooms and publish one event. Watch which subscriptions survive the scene change.");
+        private static readonly GUIContent NestedDescription = new GUIContent(
+            "A, B and D start subscribed. A changes the list during the outer callback, then publishes again.");
         private readonly EventBus bus = new EventBus();
         private readonly int[] totals = new int[3];
         private readonly int[] lastDeliveries = new int[3];
@@ -118,48 +124,85 @@ namespace GameplaySamples.EvmLite
             Fill(new Rect(0f, 0f, screenWidth, screenHeight), Background);
 
             bool narrow = screenWidth < 660f;
-            float pageHeight = showNestedDelivery ? 561f : narrow ? 720f : 494f;
-            float innerWidth = screenWidth - (screenHeight < pageHeight ? 16f : 0f);
-            scroll = GUI.BeginScrollView(new Rect(0f, 0f, screenWidth, screenHeight), scroll,
-                new Rect(0f, 0f, innerWidth, pageHeight), false, false);
-            float width = Mathf.Min(1140f, innerWidth - (narrow ? 24f : 64f));
+            float margin = narrow ? 24f : 64f;
+            float innerWidth = screenWidth;
+            float width = Mathf.Min(1140f, innerWidth - margin);
             float left = (innerWidth - width) * 0.5f;
+            var layout = MeasurePage(left, width, narrow);
+            if (screenHeight < layout.PageHeight)
+            {
+                innerWidth -= 16f;
+                width = Mathf.Min(1140f, innerWidth - margin);
+                left = (innerWidth - width) * 0.5f;
+                layout = MeasurePage(left, width, narrow);
+            }
 
-            GUI.Label(new Rect(left, 20f, width, 48f), "EVM Lite", title);
-            float modeWidth = Mathf.Min(155f, width * 0.48f);
-            if (DrawButton(new Rect(left + width - modeWidth, 24f, modeWidth, 38f),
-                    showNestedDelivery ? "Scene lifetime" : "Nested delivery", true))
+            scroll = GUI.BeginScrollView(new Rect(0f, 0f, screenWidth, screenHeight), scroll,
+                new Rect(0f, 0f, innerWidth, layout.PageHeight), false, false);
+            GUI.Label(layout.Heading, Heading, title);
+            bool changeMode = DrawButton(layout.Mode,
+                showNestedDelivery ? "Scene lifetime" : "Nested delivery", true);
+            GUI.Label(layout.Description, showNestedDelivery ? NestedDescription : SceneDescription, text);
+            float actionTop = layout.Description.yMax + 6f;
+            if (showNestedDelivery)
+                DrawNestedDelivery(left, width, actionTop, layout.TraceRowHeight);
+            else
+                DrawSceneLifetime(left, width, narrow, actionTop);
+            GUI.EndScrollView();
+            GUI.matrix = original;
+
+            if (changeMode)
             {
                 showNestedDelivery = !showNestedDelivery;
                 scroll = Vector2.zero;
             }
-
-            if (showNestedDelivery)
-                DrawNestedDelivery(left, width);
-            else
-                DrawSceneLifetime(left, width, narrow);
-            GUI.EndScrollView();
-            GUI.matrix = original;
         }
 
-        private void DrawSceneLifetime(float left, float width, bool narrow)
+        private (Rect Heading, Rect Mode, Rect Description, float TraceRowHeight, float PageHeight)
+            MeasurePage(float left, float width, bool narrow)
         {
-            GUI.Label(new Rect(left, 71f, width, 58f),
-                "Switch rooms and publish one event. Watch which subscriptions survive the scene change.", text);
+            const float gap = 12f;
+            float modeWidth = Mathf.Min(155f, width);
+            bool stacked = title.CalcSize(Heading).x + gap + modeWidth > width;
+            var heading = new Rect(left, 20f, stacked ? width : width - modeWidth - gap, 48f);
+            var mode = stacked
+                ? new Rect(left, 76f, modeWidth, 40f)
+                : new Rect(left + width - modeWidth, 24f, modeWidth, 38f);
+            GUIContent description = showNestedDelivery ? NestedDescription : SceneDescription;
+            float descriptionHeight = Mathf.Max(58f, Mathf.Ceil(text.CalcHeight(description, width)));
+            var subtitle = new Rect(left, stacked ? 123f : 71f, width, descriptionHeight);
+            float rowHeight = DefaultTraceRowHeight;
+            float pageHeight = showNestedDelivery ? 561f : narrow ? 720f : 494f;
+            if (showNestedDelivery && nestedSteps != null)
+            {
+                var action = new GUIContent();
+                foreach (DeliveryStep step in nestedSteps)
+                {
+                    action.text = step.Action;
+                    rowHeight = Mathf.Max(rowHeight, Mathf.Ceil(text.CalcHeight(action, width - 109f)));
+                }
 
+                pageHeight += nestedSteps.Count * (rowHeight - DefaultTraceRowHeight);
+            }
+
+            return (heading, mode, subtitle, rowHeight, pageHeight + subtitle.yMax - 129f);
+        }
+
+        private void DrawSceneLifetime(float left, float width, bool narrow, float actionTop)
+        {
             const float gap = 8f;
             float smallButton = Mathf.Min(148f, (width - gap) / 2f);
-            if (DrawButton(new Rect(left, 135f, smallButton, 40f), "Load room A", activeRoom != 0))
+            if (DrawButton(new Rect(left, actionTop, smallButton, 40f), "Load room A", activeRoom != 0))
                 StartCoroutine(SwitchRoom(0));
-            if (DrawButton(new Rect(left + smallButton + gap, 135f, smallButton, 40f), "Load room B", activeRoom != 1))
+            if (DrawButton(new Rect(left + smallButton + gap, actionTop, smallButton, 40f), "Load room B", activeRoom != 1))
                 StartCoroutine(SwitchRoom(1));
 
             float publishLeft = narrow ? left : left + (smallButton + gap) * 2f;
-            float publishTop = narrow ? 183f : 135f;
+            float publishTop = narrow ? actionTop + 48f : actionTop;
             if (DrawButton(new Rect(publishLeft, publishTop, 162f, 40f), "Publish signal", activeRoom >= 0))
                 Publish();
 
-            float statusTop = narrow ? 232f : 190f;
+            float statusTop = actionTop + (narrow ? 97f : 55f);
             Fill(new Rect(left, statusTop, width, 66f), Panel);
             GUI.Label(new Rect(left + 13f, statusTop + 7f, width - 26f, 51f), status, text);
             float cardTop = statusTop + 83f;
@@ -176,18 +219,15 @@ namespace GameplaySamples.EvmLite
                 $"{published} signals sent · {sceneSwitches} room loads", hint);
         }
 
-        private void DrawNestedDelivery(float left, float width)
+        private void DrawNestedDelivery(float left, float width, float actionTop, float rowHeight)
         {
-            GUI.Label(new Rect(left, 71f, width, 58f),
-                "A, B and D start subscribed. A changes the list during the outer callback, then publishes again.", text);
-            if (DrawButton(new Rect(left, 135f, 162f, 40f), "Run nested trace", true))
+            if (DrawButton(new Rect(left, actionTop, 162f, 40f), "Run nested trace", true))
                 nestedSteps = NestedDeliveryExercise.Run();
 
             if (nestedSteps == null)
                 return;
 
-            const float panelTop = 190f;
-            const float rowHeight = 34f;
+            float panelTop = actionTop + 55f;
             float panelHeight = 54f + nestedSteps.Count * rowHeight;
             Fill(new Rect(left, panelTop, width, panelHeight), Panel);
             GUI.Label(new Rect(left + 12f, panelTop + 8f, width - 24f, 28f), "Delivery order", number);

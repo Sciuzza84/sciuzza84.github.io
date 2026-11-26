@@ -4,6 +4,8 @@ namespace GameplaySamples.ArPlacement
 {
     public sealed class ArPlacementExplorer : MonoBehaviour
     {
+        private static readonly GUIContent Caption = new GUIContent(
+            "Simulated camera quality and device tilt. Tune the signal, then confirm the anchor.");
         private static readonly Color Background = new Color32(17, 28, 33, 255);
         private static readonly Color Panel = new Color32(25, 42, 47, 255);
         private static readonly Color Grid = new Color32(58, 76, 79, 255);
@@ -76,27 +78,41 @@ namespace GameplaySamples.ArPlacement
             Fill(new Rect(0f, 0f, screenWidth, screenHeight), Background);
 
             bool stacked = screenWidth < 740f;
+            const float captionTop = 62f;
+            const float captionGap = 6f;
+            float horizontalPadding = stacked ? 24f : 64f;
+            float defaultControlsTop = stacked ? 118f : 114f;
             float pageHeight = stacked ? 962f : 610f;
-            float scrollWidth = screenHeight < pageHeight ? 16f : 0f;
+            float width = Mathf.Min(1120f, screenWidth - horizontalPadding);
+            float captionHeight = body.CalcHeight(Caption, width);
+            float controlsTop = Mathf.Max(defaultControlsTop, captionTop + captionHeight + captionGap);
+            float scrollWidth = 0f;
+            if (screenHeight < pageHeight + (controlsTop - defaultControlsTop))
+            {
+                scrollWidth = 16f;
+                width = Mathf.Min(1120f, screenWidth - horizontalPadding - scrollWidth);
+                captionHeight = body.CalcHeight(Caption, width);
+                controlsTop = Mathf.Max(defaultControlsTop, captionTop + captionHeight + captionGap);
+            }
+
+            pageHeight += controlsTop - defaultControlsTop;
             scroll = GUI.BeginScrollView(new Rect(0f, 0f, screenWidth, screenHeight), scroll,
                 new Rect(0f, 0f, screenWidth - scrollWidth, pageHeight));
-            float width = Mathf.Min(1120f, screenWidth - scrollWidth - (stacked ? 24f : 64f));
             float left = (screenWidth - scrollWidth - width) * 0.5f;
             GUI.Label(new Rect(left, 14f, width, 45f), "AR placement", title);
-            GUI.Label(new Rect(left, 62f, width, stacked ? 50f : 30f),
-                "Simulated camera quality and device tilt. Tune the signal, then confirm the anchor.", body);
+            GUI.Label(new Rect(left, captionTop, width, captionHeight), Caption, body);
 
             const float controlsHeight = 476f;
             if (stacked)
             {
-                DrawControls(new Rect(left, 118f, width, controlsHeight));
-                DrawPreview(new Rect(left, 606f, width, 326f));
+                DrawControls(new Rect(left, controlsTop, width, controlsHeight));
+                DrawPreview(new Rect(left, controlsTop + controlsHeight + 12f, width, 326f));
             }
             else
             {
                 const float controlWidth = 330f;
-                DrawControls(new Rect(left, 114f, controlWidth, controlsHeight));
-                DrawPreview(new Rect(left + controlWidth + 14f, 114f, width - controlWidth - 14f, controlsHeight));
+                DrawControls(new Rect(left, controlsTop, controlWidth, controlsHeight));
+                DrawPreview(new Rect(left + controlWidth + 14f, controlsTop, width - controlWidth - 14f, controlsHeight));
             }
 
             GUI.EndScrollView();
