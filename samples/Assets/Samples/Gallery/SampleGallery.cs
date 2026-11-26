@@ -1,6 +1,10 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_WEBGL && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+using UnityEngine.Rendering;
+#endif
 
 namespace GameplaySamples
 {
@@ -16,7 +20,8 @@ namespace GameplaySamples
             new Entry("content-updates", "ContentUpdates", "Content updates", "Apply versioned content and replay an interrupted update."),
             new Entry("layered-layout", "LayeredLayout", "Layered layout", "Validate an artist's layout before it becomes a Unity level."),
             new Entry("round-planner", "RoundPlanner", "Round planner", "Balance target exposure across a finite catalog."),
-            new Entry("match-recovery", "MatchRecovery", "Match recovery", "Drop a delivery and recover a scoreboard replica from a snapshot.")
+            new Entry("match-recovery", "MatchRecovery", "Match recovery", "Drop a delivery and recover a scoreboard replica from a snapshot."),
+            new Entry("launch-handoff", "LaunchHandoff", "Launch handoff", "Compare two releases from guided motion to Rigidbody physics.")
         };
 
         private GUIStyle title;
@@ -72,6 +77,66 @@ namespace GameplaySamples
         }
 
         private static bool IsAvailable(Entry entry) => Application.CanStreamedLevelBeLoaded(entry.Scene);
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        private static int sceneRevision;
+
+        [DllImport("__Internal")]
+        private static extern void SetUnityPortfolioActiveSample(string key, string title);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void ObserveActiveScene()
+        {
+            // Keep the portfolio navigation keyboard-accessible while the canvas is unfocused.
+            WebGLInput.captureAllKeyboardInput = false;
+            SceneManager.activeSceneChanged += PublishActiveScene;
+            PublishActiveScene(default, SceneManager.GetActiveScene());
+        }
+
+        private static async void PublishActiveScene(Scene previous, Scene current)
+        {
+            int revision = ++sceneRevision;
+            SetUnityPortfolioActiveSample(string.Empty, string.Empty);
+            if (!TryDescribeScene(current.name, out string key, out string sceneTitle))
+                return;
+
+            // The first scene can already be active while the startup splash is still visible.
+            do
+            {
+                await Awaitable.NextFrameAsync();
+                if (revision != sceneRevision)
+                    return;
+            }
+            while (!current.isLoaded || !SplashScreen.isFinished);
+
+            await Awaitable.EndOfFrameAsync();
+            if (revision == sceneRevision)
+                SetUnityPortfolioActiveSample(key, sceneTitle);
+        }
+
+        private static bool TryDescribeScene(string scene, out string key, out string sceneTitle)
+        {
+            if (scene == "Samples")
+            {
+                key = "gallery";
+                sceneTitle = "Unity gameplay samples";
+                return true;
+            }
+
+            foreach (Entry entry in Entries)
+            {
+                if (entry.Scene == scene)
+                {
+                    key = entry.Key;
+                    sceneTitle = entry.Title;
+                    return true;
+                }
+            }
+
+            key = sceneTitle = null;
+            return false;
+        }
+#endif
 
         private void CreateStyles()
         {

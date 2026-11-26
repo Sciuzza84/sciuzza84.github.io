@@ -18,6 +18,7 @@ Use a desktop browser with WebGL 2 for the Web player. [Open the gallery](https:
 | **Layered layout** | [Play](https://sciuzza84.github.io/demos/unity/?sample=layered-layout) · Move the beacon, then try a naming or position error. The last valid preview stays visible. | [Prefab and data importer](Assets/Samples/LayeredLayout/Editor/LayeredLayoutImporter.cs) · [Guide](Assets/Samples/LayeredLayout/README.md) · [Checks](Tests/LayeredLayout/Program.cs) |
 | **Round planner** | [Play](https://sciuzza84.github.io/demos/unity/?sample=round-planner) · Accept successive plans and compare target exposure. Try an infeasible quota and replay a saved plan. | [Guide](Assets/Samples/RoundPlanner/README.md) · [Checks](Tests/RoundPlanner/Program.cs) |
 | **Match recovery** | [Play](https://sciuzza84.github.io/demos/unity/?sample=match-recovery) · Deliver revision 1, skip revision 2, deliver revision 3, then compare an old snapshot with a covering snapshot. | [Replica model](Assets/Samples/MatchRecovery/Runtime/Core/MatchReplica.cs) · [Guide](Assets/Samples/MatchRecovery/README.md) · [Checks](Tests/MatchRecovery/Program.cs) |
+| **Launch handoff** | [Play](https://sciuzza84.github.io/demos/unity/?sample=launch-handoff) · Run the comparison and read the velocity and displacement from two Rigidbody traces. | [Unity driver](Assets/Samples/LaunchHandoff/Runtime/View/LaunchHandoffExplorer.cs) · [Guide](Assets/Samples/LaunchHandoff/README.md) · [Checks](Tests/LaunchHandoff/Program.cs) |
 
 AR placement uses simulated tracking quality and tilt, Content Updates uses simulated transport and storage, and Adaptive Layout uses simulated screen insets.
 
@@ -40,7 +41,14 @@ python -m http.server 8198 --bind 127.0.0.1 --directory Builds/Web/Gallery
 
 ## Run the checks
 
-Run these commands from the `samples` directory with the **.NET 8 SDK** or a compatible newer SDK and runtime. Each check compiles the same C# core used by the Unity project.
+From the `samples` directory, use Python 3 and the **.NET 8 SDK** or a compatible newer SDK and runtime. These checks compile the same C# core used by Unity.
+
+```sh
+python check_samples.py
+python check_samples.py Dungeon MatchRecovery
+```
+
+To run a single project directly, use the corresponding command below.
 
 ```sh
 dotnet run --project Tests/Dungeon/Dungeon.Checks.csproj -c Release
@@ -53,6 +61,7 @@ dotnet run --project Tests/AdaptiveLayout/AdaptiveLayout.Checks.csproj -c Releas
 dotnet run --project Tests/LayeredLayout/LayeredLayout.Checks.csproj -c Release
 dotnet run --project Tests/RoundPlanner/RoundPlanner.Checks.csproj -c Release
 dotnet run --project Tests/MatchRecovery/MatchRecovery.Checks.csproj -c Release
+dotnet run --project Tests/LaunchHandoff/LaunchHandoff.Checks.csproj -c Release
 ```
 
 The [Level Editor check in Unity](Assets/Samples/LevelEditor/README.md) verifies saving and reloading a draft asset, including the preservation of its GUID. The [Layered layout importer](Assets/Samples/LayeredLayout/README.md) and the [Adaptive Layout controller](Assets/Samples/AdaptiveLayout/README.md) also provide Unity batch verification paths.

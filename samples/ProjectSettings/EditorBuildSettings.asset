@@ -41,4 +41,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Samples/RoundPlanner/Scenes/RoundPlanner.unity
     guid: be6f51f090c34a2da69be6d707d7aafd
+  - enabled: 1
+    path: Assets/Samples/LaunchHandoff/Scenes/LaunchHandoff.unity
+    guid: 3a8bb6fc229b46ffb7f206f67c3210b6
   m_configObjects: {}
