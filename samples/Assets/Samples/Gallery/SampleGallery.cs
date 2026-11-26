@@ -82,7 +82,7 @@ namespace GameplaySamples
         private static int sceneRevision;
 
         [DllImport("__Internal")]
-        private static extern void SetUnityPortfolioActiveSample(string key, string title);
+        private static extern void SetUnityPortfolioActiveSample(string key, string title, string folder);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void ObserveActiveScene()
@@ -96,7 +96,7 @@ namespace GameplaySamples
         private static async void PublishActiveScene(Scene previous, Scene current)
         {
             int revision = ++sceneRevision;
-            SetUnityPortfolioActiveSample(string.Empty, string.Empty);
+            SetUnityPortfolioActiveSample(string.Empty, string.Empty, string.Empty);
             if (!TryDescribeScene(current.name, out string key, out string sceneTitle))
                 return;
 
@@ -111,7 +111,7 @@ namespace GameplaySamples
 
             await Awaitable.EndOfFrameAsync();
             if (revision == sceneRevision)
-                SetUnityPortfolioActiveSample(key, sceneTitle);
+                SetUnityPortfolioActiveSample(key, sceneTitle, key == "gallery" ? string.Empty : current.name);
         }
 
         private static bool TryDescribeScene(string scene, out string key, out string sceneTitle)

@@ -114,30 +114,21 @@ internal static class Program
 
     private static void NestedPublishUsesTheCurrentSubscriptionOrder()
     {
-        var bus = new EventBus();
-        using EventScope first = bus.CreateScope();
-        using EventScope removed = bus.CreateScope();
-        using EventScope survivor = bus.CreateScope();
-        using EventScope added = bus.CreateScope();
-        var trace = new List<string>();
-
-        first.Subscribe<int>(value =>
+        var expected = new[]
         {
-            trace.Add($"first:{value}");
-            if (value == 1)
-            {
-                removed.Dispose();
-                added.Subscribe<int>(newValue => trace.Add($"added:{newValue}"));
-                bus.Publish(2);
-                trace.Add("first:resumed");
-            }
-        });
-        removed.Subscribe<int>(value => trace.Add($"removed:{value}"));
-        survivor.Subscribe<int>(value => trace.Add($"survivor:{value}"));
-        bus.Publish(1);
-
-        string[] expected = { "first:1", "first:2", "survivor:2", "added:2", "first:resumed", "survivor:1" };
+            (DeliveryPhase.Outer, "A receives"),
+            (DeliveryPhase.Outer, "A removes B and subscribes C"),
+            (DeliveryPhase.Inner, "A receives"),
+            (DeliveryPhase.Inner, "D receives"),
+            (DeliveryPhase.Inner, "C receives"),
+            (DeliveryPhase.Outer, "A resumes"),
+            (DeliveryPhase.Outer, "D receives")
+        };
+        var trace = NestedDeliveryExercise.Run().Select(step => (step.Phase, step.Action)).ToArray();
         Require(trace.SequenceEqual(expected), $"Unexpected nested delivery order: {string.Join(", ", trace)}");
+        Require(NestedDeliveryExercise.Run().Select(step => (step.Phase, step.Action)).SequenceEqual(expected),
+            "Repeating the trace must start with the same three subscriptions.");
+        Console.WriteLine("PASS: nested trace visits A, D, C in the inner publish, then resumes A and delivers to D in the outer publish.");
     }
 
     private static void NestedPublishCanReplaceAnEmptyChannel()

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,6 +19,8 @@ namespace GameplaySamples.EvmLite
         private int published;
         private int sceneSwitches;
         private bool switching;
+        private bool showNestedDelivery;
+        private IReadOnlyList<DeliveryStep> nestedSteps;
         private string status = "Loading room A…";
         private Vector2 scroll;
         private GUIStyle title;
@@ -25,6 +28,8 @@ namespace GameplaySamples.EvmLite
         private GUIStyle hint;
         private GUIStyle number;
         private GUIStyle button;
+        private GUIStyle outerPhase;
+        private GUIStyle innerPhase;
         private static readonly Color Background = new Color32(13, 25, 30, 255);
         private static readonly Color Panel = new Color32(24, 42, 48, 255);
         private static readonly Color Ink = new Color32(237, 239, 229, 255);
@@ -113,7 +118,7 @@ namespace GameplaySamples.EvmLite
             Fill(new Rect(0f, 0f, screenWidth, screenHeight), Background);
 
             bool narrow = screenWidth < 660f;
-            float pageHeight = narrow ? 720f : 494f;
+            float pageHeight = showNestedDelivery ? 561f : narrow ? 720f : 494f;
             float innerWidth = screenWidth - (screenHeight < pageHeight ? 16f : 0f);
             scroll = GUI.BeginScrollView(new Rect(0f, 0f, screenWidth, screenHeight), scroll,
                 new Rect(0f, 0f, innerWidth, pageHeight), false, false);
@@ -121,6 +126,24 @@ namespace GameplaySamples.EvmLite
             float left = (innerWidth - width) * 0.5f;
 
             GUI.Label(new Rect(left, 20f, width, 48f), "EVM Lite", title);
+            float modeWidth = Mathf.Min(155f, width * 0.48f);
+            if (DrawButton(new Rect(left + width - modeWidth, 24f, modeWidth, 38f),
+                    showNestedDelivery ? "Scene lifetime" : "Nested delivery", true))
+            {
+                showNestedDelivery = !showNestedDelivery;
+                scroll = Vector2.zero;
+            }
+
+            if (showNestedDelivery)
+                DrawNestedDelivery(left, width);
+            else
+                DrawSceneLifetime(left, width, narrow);
+            GUI.EndScrollView();
+            GUI.matrix = original;
+        }
+
+        private void DrawSceneLifetime(float left, float width, bool narrow)
+        {
             GUI.Label(new Rect(left, 71f, width, 58f),
                 "Switch rooms and publish one event. Watch which subscriptions survive the scene change.", text);
 
@@ -151,8 +174,36 @@ namespace GameplaySamples.EvmLite
             float summaryTop = cardTop + (narrow ? 329f : 108f);
             GUI.Label(new Rect(left, summaryTop, width, 36f),
                 $"{published} signals sent · {sceneSwitches} room loads", hint);
-            GUI.EndScrollView();
-            GUI.matrix = original;
+        }
+
+        private void DrawNestedDelivery(float left, float width)
+        {
+            GUI.Label(new Rect(left, 71f, width, 58f),
+                "A, B and D start subscribed. A changes the list during the outer callback, then publishes again.", text);
+            if (DrawButton(new Rect(left, 135f, 162f, 40f), "Run nested trace", true))
+                nestedSteps = NestedDeliveryExercise.Run();
+
+            if (nestedSteps == null)
+                return;
+
+            const float panelTop = 190f;
+            const float rowHeight = 34f;
+            float panelHeight = 54f + nestedSteps.Count * rowHeight;
+            Fill(new Rect(left, panelTop, width, panelHeight), Panel);
+            GUI.Label(new Rect(left + 12f, panelTop + 8f, width - 24f, 28f), "Delivery order", number);
+            for (int index = 0; index < nestedSteps.Count; index++)
+            {
+                DeliveryStep step = nestedSteps[index];
+                bool inner = step.Phase == DeliveryPhase.Inner;
+                float y = panelTop + 41f + index * rowHeight;
+                Fill(new Rect(left + 12f, y + 4f, 2f, 24f), inner ? Accent : Amber);
+                GUI.Label(new Rect(left + 20f, y, 24f, rowHeight), (index + 1).ToString(), hint);
+                GUI.Label(new Rect(left + 45f, y, 48f, rowHeight), inner ? "Inner" : "Outer", inner ? innerPhase : outerPhase);
+                GUI.Label(new Rect(left + 97f, y, width - 109f, rowHeight), step.Action, text);
+            }
+
+            GUI.Label(new Rect(left, panelTop + panelHeight + 8f, width, 55f),
+                "B is removed before its turn. C joins the inner publish. D receives both, inner first.", hint);
         }
 
         private bool DrawButton(Rect bounds, string label, bool available)
@@ -184,6 +235,8 @@ namespace GameplaySamples.EvmLite
             text = Label(17, Ink);
             hint = Label(14, Muted);
             number = Label(19, Accent, FontStyle.Bold);
+            outerPhase = Label(13, Amber, FontStyle.Bold);
+            innerPhase = Label(13, Accent, FontStyle.Bold);
             button = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 15,

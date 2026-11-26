@@ -8,6 +8,12 @@ Open [EvmLite.unity](Scenes/EvmLite.unity) and press Play. With room A loaded, p
 
 The main scene stays loaded. Each room is an actual additive Unity scene with its own [receiver GameObject](Runtime/View/RoomSignalReceiver.cs). Destroying that GameObject during scene unload disposes the subscriptions it owns. The [demo controller](Runtime/View/EvmLiteExplorer.cs) owns the persistent receiver for the duration of the sample.
 
+### Nested delivery
+
+Choose **Nested delivery → Run nested trace**. The trace starts with listeners A, B and D, in registration order. While handling the outer publish, A disposes B, subscribes C and publishes the inner event. The inner publish reaches A, D and C. Then A resumes its outer callback, and that publish reaches D. Return to the additive room exercise with **Scene lifetime**.
+
+The [trace runner](Runtime/Core/NestedDeliveryExercise.cs) runs an actual `EventBus` and records each callback and membership change. Each run starts with fresh scopes. The .NET test verifies the exact displayed order and a second identical run.
+
 ## Use the core
 
 ```csharp

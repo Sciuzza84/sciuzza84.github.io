@@ -13,6 +13,7 @@ namespace GameplaySamples.LayeredLayout.Editor
         private const string Output = SampleFolder + "/Generated/LayeredLayout.prefab";
         private const float PixelsPerUnit = 100f;
         private static readonly Vector3 MarkerScale = new Vector3(0.20f, 0.20f, 1f);
+        private delegate GameObject PrefabWriter(GameObject root, string path, out bool saved);
 
         [MenuItem("Samples/Layered Layout/Import Selected JSON")]
         private static void ImportSelected()
@@ -80,7 +81,8 @@ namespace GameplaySamples.LayeredLayout.Editor
                 Check(updatedPrefab.IsUnchanged() && updatedData.IsUnchanged(),
                     "A rejected source modified the previous assets or their metadata.");
                 CheckOutput(output, moved, new Vector3(1.34f, -0.20f, -0.03f));
-                Debug.Log("Layered Layout PASS: prefab/data link, disk reload, moved layer, stable GUIDs, idempotence and rejection.");
+                VerifyWriteRollback(output, valid, moved);
+                Debug.Log("Layered Layout PASS: prefab/data link, disk reload, moved layer, stable GUIDs, idempotence, rejection and write rollback.");
             }
             finally
             {
@@ -89,7 +91,31 @@ namespace GameplaySamples.LayeredLayout.Editor
             }
         }
 
-        private static bool TryImport(string json, string output, out GameObject prefab, out string result)
+        private static void VerifyWriteRollback(string output, TextAsset replacement, TextAsset installed)
+        {
+            const string writeFailure = "Simulated interruption during prefab save.";
+            var prefabBefore = new AssetBackup(output);
+            var dataBefore = new AssetBackup(GetDataPath(output));
+
+            GameObject FailAfterWritingPrefab(GameObject root, string path, out bool saved)
+            {
+                Check(!dataBefore.IsUnchanged(), "The level data must be written before exercising the second save.");
+                GameObject written = PrefabUtility.SaveAsPrefabAsset(root, path, out saved);
+                Check(saved && written && !prefabBefore.IsUnchanged(), "The prefab must change before injecting the interruption.");
+                throw new IOException(writeFailure);
+            }
+
+            Check(!TryImport(replacement.text, output, out GameObject failed, out string result, FailAfterWritingPrefab) &&
+                !failed && result.Contains(writeFailure) && result.Contains("Previous outputs preserved"), result);
+            Check(prefabBefore.IsUnchanged() && dataBefore.IsUnchanged(),
+                "A write interruption did not restore both previous files and their metadata.");
+            Check(TryImport(installed.text, output, out _, out result) && result.StartsWith("Layout unchanged"),
+                "The Editor did not immediately see the restored pair: " + result);
+            CheckOutput(output, installed, new Vector3(1.34f, -0.20f, -0.03f));
+        }
+
+        private static bool TryImport(string json, string output, out GameObject prefab, out string result,
+            PrefabWriter writePrefab = null)
         {
             prefab = null;
             if (!LayerJson.TryRead(json, out LayerMap layout, out result))
@@ -119,11 +145,12 @@ namespace GameplaySamples.LayeredLayout.Editor
                 return true;
             }
 
-            return TrySave(layout, output, dataPath, previousData, reuseData, out prefab, out result);
+            return TrySave(layout, output, dataPath, previousData, reuseData,
+                writePrefab ?? PrefabUtility.SaveAsPrefabAsset, out prefab, out result);
         }
 
         private static bool TrySave(LayerMap layout, string output, string dataPath, PuzzleLayoutAsset data, bool reuseData,
-            out GameObject prefab, out string result)
+            PrefabWriter writePrefab, out GameObject prefab, out string result)
         {
             prefab = null;
             string directory = Path.GetDirectoryName(output).Replace(Path.DirectorySeparatorChar, '/');
@@ -157,7 +184,7 @@ namespace GameplaySamples.LayeredLayout.Editor
                 if (!reuseData)
                     data = SaveData(data, dataPath, layout);
                 root.AddComponent<ImportedLayerLayout>().SetLayout(data);
-                prefab = PrefabUtility.SaveAsPrefabAsset(root, output, out bool saved);
+                prefab = writePrefab(root, output, out bool saved);
                 if (!saved || !prefab)
                     throw new IOException($"Unable to save {output}.");
 

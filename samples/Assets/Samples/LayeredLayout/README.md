@@ -24,4 +24,6 @@ The browser uses the same fixtures, sorting, and validation. The Unity Editor wr
 - [Serialized level data](Runtime/View/PuzzleLayoutAsset.cs)
 - [Standalone checks](../../../Tests/LayeredLayout/Program.cs)
 
-Run `dotnet run --project Tests/LayeredLayout/LayeredLayout.Checks.csproj -c Release` from the repository root. To verify both Unity outputs, run the Editor in batch mode with `-executeMethod GameplaySamples.LayeredLayout.Editor.LayeredLayoutImporter.VerifySample`. The Editor check reloads the assets from disk, checks the prefab reference and reordered coordinates, and verifies file bytes, metadata and GUIDs across unchanged, changed, and rejected inputs.
+Run `dotnet run --project Tests/LayeredLayout/LayeredLayout.Checks.csproj -c Release` from the repository root. To verify both Unity outputs, run the Editor in batch mode with `-executeMethod GameplaySamples.LayeredLayout.Editor.LayeredLayoutImporter.VerifySample`. The Editor check verifies positions, links, file bytes, metadata and GUIDs across unchanged, changed and rejected inputs.
+
+The batch check also performs both writes on test assets, then simulates an I/O error in the prefab writer. The importer restores the last saved prefab, level data and metadata. The check confirms that Unity can reuse and reload that restored pair.
