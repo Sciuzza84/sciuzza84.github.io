@@ -26,7 +26,7 @@ namespace GameplaySamples.AdaptiveLayout
             IsFinite(X) && IsFinite(Y) && IsFinite(Width) && IsFinite(Height) &&
             IsFinite(Right) && IsFinite(Top) && Width > 0f && Height > 0f;
 
-        private static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+        internal static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
     }
 
     public readonly struct LayoutResult
@@ -45,10 +45,15 @@ namespace GameplaySamples.AdaptiveLayout
 
     public static class LayoutGeometry
     {
-        public static bool TryCalculate(LayoutRect viewport, LayoutRect safeArea, LayoutRect world, out LayoutResult layout)
+        public static bool TryCalculate(LayoutRect viewport, LayoutRect safeArea, LayoutRect world, out LayoutResult layout) =>
+            TryCalculate(viewport, safeArea, world, viewport.Width / viewport.Height, out layout);
+
+        public static bool TryCalculate(LayoutRect viewport, LayoutRect safeArea, LayoutRect world,
+            float projectionAspect, out LayoutResult layout)
         {
             layout = default;
-            if (!viewport.HasArea || !safeArea.HasArea || !world.HasArea)
+            if (!viewport.HasArea || !safeArea.HasArea || !world.HasArea ||
+                !LayoutRect.IsFinite(projectionAspect) || projectionAspect <= 0f)
                 return false;
 
             float left = Math.Max(viewport.X, safeArea.X);
@@ -64,11 +69,9 @@ namespace GameplaySamples.AdaptiveLayout
                 (right - left) / viewport.Width,
                 (top - bottom) / viewport.Height);
 
-            // The UI avoids cutouts; the camera uses the full viewport so the world can
-            // extend behind them. Fit whichever axis would otherwise crop the world.
-            float aspect = viewport.Width / viewport.Height;
-            float height = Math.Max(world.Height, world.Width / aspect);
-            float width = height * aspect;
+            // HUD anchors use pixel geometry. The world fits the proportions of the projection.
+            float height = Math.Max(world.Height, world.Width / projectionAspect);
+            float width = height * projectionAspect;
             var camera = new LayoutRect(world.CenterX - width * 0.5f, world.CenterY - height * 0.5f,
                 width, height);
             if (!camera.HasArea)

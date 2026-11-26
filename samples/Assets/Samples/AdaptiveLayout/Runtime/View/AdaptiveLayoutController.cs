@@ -15,6 +15,7 @@ namespace GameplaySamples.AdaptiveLayout
         private Rect lastSafeArea;
         private Rect lastWorldBounds;
         private bool lastOrthographic;
+        private float lastProjectionAspect;
         private bool hasMeasurement;
 
         private void OnEnable()
@@ -39,9 +40,10 @@ namespace GameplaySamples.AdaptiveLayout
             }
 
             bool orthographic = targetCamera.orthographic;
+            float projectionAspect = targetCamera.aspect;
             if (hasMeasurement && lastCamera == targetCamera && lastRoot == safeRoot &&
-                lastOrthographic == orthographic && lastViewport.Equals(viewport) &&
-                lastSafeArea.Equals(safeArea) && lastWorldBounds.Equals(worldBounds))
+                lastOrthographic == orthographic && lastProjectionAspect.Equals(projectionAspect) &&
+                lastViewport.Equals(viewport) && lastSafeArea.Equals(safeArea) && lastWorldBounds.Equals(worldBounds))
                 return false;
 
             // An invalid sample changes what we observed, but never mutates the last valid transforms.
@@ -49,10 +51,11 @@ namespace GameplaySamples.AdaptiveLayout
             lastCamera = targetCamera;
             lastRoot = safeRoot;
             lastOrthographic = orthographic;
+            lastProjectionAspect = projectionAspect;
             lastViewport = viewport;
             lastSafeArea = safeArea;
             lastWorldBounds = worldBounds;
-            return UnityLayoutAdapter.TryApply(targetCamera, safeRoot, worldBounds, viewport, safeArea);
+            return UnityLayoutAdapter.TryApply(targetCamera, safeRoot, worldBounds, viewport, safeArea, projectionAspect);
         }
     }
 }

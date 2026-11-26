@@ -34,12 +34,19 @@ namespace GameplaySamples.ContentUpdates
     {
         public ContentManifest(ContentPlatform platform, int version, IEnumerable<ContentEntry> entries)
         {
+            if (version < 1)
+                throw new ArgumentOutOfRangeException(nameof(version), "The manifest version must be positive.");
+            if (entries == null)
+                throw new ArgumentNullException(nameof(entries));
+
             Platform = platform;
             Version = version;
             var names = new HashSet<string>(StringComparer.Ordinal);
             var files = new List<ContentEntry>();
             foreach (ContentEntry entry in entries)
             {
+                if (string.IsNullOrWhiteSpace(entry?.Name))
+                    throw new ArgumentException("Every manifest entry needs a nonblank name.", nameof(entries));
                 if (!names.Add(entry.Name))
                     throw new ArgumentException("The manifest names the same file twice.", nameof(entries));
                 files.Add(entry);

@@ -85,7 +85,7 @@ namespace GameplaySamples.MatchRecovery
             if (minimum > 0)
                 GUILayout.Label($"Gap detected. Snapshot needs to cover revision {minimum} or later.", warning);
             else if (client.State.Revision < authority.State.Revision)
-                GUILayout.Label("The client is behind. A later delivery will reveal the gap.", muted);
+                GUILayout.Label("The client is behind. Recover from a snapshot to catch up.", muted);
             else
                 GUILayout.Label("Client is in sync.", muted);
         }
@@ -171,9 +171,11 @@ namespace GameplaySamples.MatchRecovery
         {
             string message = client.Install(snapshot) switch
             {
-                SnapshotResult.Applied => "installed, client is in sync.",
+                SnapshotResult.Applied when client.State.Revision == authority.State.Revision =>
+                    "installed, client is in sync.",
+                SnapshotResult.Applied => "installed, client is still behind the authority.",
                 SnapshotResult.TooOld => "too old, client state preserved.",
-                SnapshotResult.AlreadyCurrent => "already current.",
+                SnapshotResult.AlreadyCurrent => "matches the installed revision.",
                 _ => "rejected, client state preserved."
             };
             Log($"Snapshot {snapshot.Revision}: {message}");

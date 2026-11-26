@@ -7,6 +7,8 @@ var tests = new (string Name, Action Run)[]
     ("asymmetric safe area anchors account for viewport origin", OffsetSafeArea),
     ("safe area is intersected with the camera viewport", SafeAreaOutsideViewport),
     ("safe area does not change the camera frame", IndependentPolicies),
+    ("projection aspect changes world fit independently of HUD anchors", ProjectionAspectFit),
+    ("invalid projection aspects are rejected", InvalidProjectionAspect),
     ("orientation round trips are stable", OrientationRoundTrip),
     ("empty resized viewports keep the last valid layout", InvalidResize),
     ("invalid input is rejected on the first measurement", InvalidFirstMeasurement)
@@ -70,6 +72,36 @@ static void IndependentPolicies()
     LayoutRect fullCamera = Calculate(viewport, viewport, world).CameraBounds;
     LayoutRect safeCamera = Calculate(viewport, new LayoutRect(20, 100, 850, 1400), world).CameraBounds;
     RequireSame(fullCamera, safeCamera);
+}
+
+static void ProjectionAspectFit()
+{
+    var viewport = new LayoutRect(100, 50, 1600, 900);
+    var safe = new LayoutRect(150, 80, 1400, 820);
+    var world = new LayoutRect(-6, -3.5f, 12, 7);
+    LayoutResult defaults = Calculate(viewport, safe, world);
+    RequireNear(3.5f, defaults.OrthographicSize);
+
+    Require(LayoutGeometry.TryCalculate(viewport, safe, world, 1f, out LayoutResult square),
+        "Could not fit the world to a square projection.");
+    RequireNear(6f, square.OrthographicSize);
+    RequireNear(12f, square.CameraBounds.Width);
+    RequireSame(defaults.UiAnchors, square.UiAnchors);
+
+    Require(LayoutGeometry.TryCalculate(viewport, safe, world, 0.5f, out LayoutResult tall),
+        "Could not fit the world to a tall projection.");
+    RequireNear(12f, tall.OrthographicSize);
+    RequireNear(12f, tall.CameraBounds.Width);
+    RequireSame(defaults.UiAnchors, tall.UiAnchors);
+}
+
+static void InvalidProjectionAspect()
+{
+    var viewport = new LayoutRect(0, 0, 1600, 900);
+    var world = new LayoutRect(-6, -3.5f, 12, 7);
+    foreach (float aspect in new[] { 0f, -1f, float.NaN, float.PositiveInfinity })
+        Require(!LayoutGeometry.TryCalculate(viewport, viewport, world, aspect, out _),
+            $"An invalid projection aspect was accepted: {aspect}.");
 }
 
 static void OrientationRoundTrip()

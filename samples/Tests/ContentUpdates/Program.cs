@@ -12,6 +12,17 @@ foreach (ContentPlatform platform in Enum.GetValues<ContentPlatform>())
     InstalledContent baseline = bootstrap.Installed;
     string oldPalette = baseline.Read("palette.txt");
 
+    var validEntry = new ContentEntry("board.txt", ContentDigest.For("replacement board"));
+    foreach (int version in new[] { 0, -1 })
+        RejectManifest(baseline, () => new ContentManifest(platform, version, new[] { validEntry }), "version");
+    foreach (string name in new[] { null, "", " \t " })
+        RejectManifest(baseline, () => new ContentManifest(platform, 2, new[]
+        {
+            validEntry, new ContentEntry(name, validEntry.Digest)
+        }), "entries");
+    RejectManifest(baseline, () => new ContentManifest(platform, 2, new[] { validEntry, null }), "entries");
+    RejectManifest(baseline, () => new ContentManifest(platform, 2, null), "entries");
+
     UpdateResult changed = InstalledContent.Update(baseline, second.Manifest, second.Fetch, () => false);
     Check(changed.Outcome == UpdateOutcome.Applied && changed.Downloaded == 1 && changed.Reused == 2 &&
         changed.Installed.Version == 2 && changed.Installed.Read("palette.txt") == second.Fetch("palette.txt"),
@@ -70,7 +81,25 @@ catch (ArgumentException)
 {
 }
 
-Console.WriteLine("PASS: initial install, selective transfer, no-op retry, corrupt payload, cancellation, staged rollback, clean retry, and platform isolation.");
+Console.WriteLine("PASS: initial install, malformed manifests, selective transfer, no-op retry, corrupt payload, cancellation, staged rollback, clean retry, and platform isolation.");
+
+static void RejectManifest(InstalledContent baseline, Func<ContentManifest> build, string parameter)
+{
+    InstalledContent installed = baseline;
+    try
+    {
+        installed = InstalledContent.Update(installed, build(),
+            _ => throw new InvalidOperationException("Invalid manifest attempted a download."), () => false).Installed;
+    }
+    catch (ArgumentException error)
+    {
+        Check(error.ParamName == parameter, "manifest validation reports the invalid input");
+        Check(ReferenceEquals(installed, baseline) && installed.Version == 1 && installed.Count == 3,
+            "malformed manifest leaves the previous installation intact");
+        return;
+    }
+    throw new InvalidOperationException("Invalid manifest was accepted.");
+}
 
 static void Check(bool condition, string name)
 {

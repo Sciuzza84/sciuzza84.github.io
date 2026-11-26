@@ -16,6 +16,6 @@ Switch to the other platform and apply version 2 with **Corrupt file** or **Canc
 
 ## Read the implementation
 
-[The updater](Runtime/Core/ContentUpdater.cs) compares SHA-256 digests to decide what to reuse and verifies new payloads against the supplied manifest. It creates a staging snapshot and swaps it in only after verification. This demo stores text in memory and simulates errors synchronously. A production service needs a trusted source for its manifest and durable replacement across process restarts.
+[The updater](Runtime/Core/ContentUpdater.cs) compares SHA-256 digests to decide what to reuse and verifies new payloads against the supplied manifest. A manifest needs a positive version and named entries. Version zero represents an empty installation. The updater creates a staging snapshot and swaps it in only after verification. This demo stores text in memory and simulates errors synchronously. A production service needs a trusted source for its manifest and durable replacement across process restarts.
 
 Run `dotnet run --project Tests/ContentUpdates/ContentUpdates.Checks.csproj -c Release` from the Unity project directory (`samples/` in the portfolio repository). The [checks](../../../Tests/ContentUpdates/Program.cs) cover selective transfer, cancellation, the version 3 partial staging failure and retry, and platform isolation.

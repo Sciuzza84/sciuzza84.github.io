@@ -71,6 +71,8 @@
       frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
       codeUrl: "Build/{{{ CODE_FILENAME }}}",
       streamingAssetsUrl: "StreamingAssets",
+      // IMGUI uses bitmap pixels for control sizes. Keep one bitmap pixel per CSS pixel.
+      devicePixelRatio: 1,
       companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
       productName: "Unity gameplay samples",
       productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
@@ -86,6 +88,64 @@
     } else {
       showError('The Unity loader did not run.');
     }
+  </script>
+  <script>
+    (() => {
+      const canvas = document.getElementById('player');
+      if (navigator.maxTouchPoints < 1) return;
+
+      function cancelledTouch(id) {
+        const touch = new Touch({ identifier: id, target: canvas, clientX: -1, clientY: -1 });
+        return new TouchEvent('touchcancel', { changedTouches: [touch], bubbles: true });
+      }
+
+      // Keep native canvas input on browsers that cannot synthesize a touch cancellation.
+      try { cancelledTouch(0); } catch { return; }
+
+      const minimumTravel = 12;
+      const scrollbarEdge = 36;
+      let gesture;
+
+      canvas.addEventListener('touchstart', event => {
+        gesture = undefined;
+        if (event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        if (touch.clientX >= canvas.getBoundingClientRect().right - scrollbarEdge) return;
+        gesture = { id: touch.identifier, x: touch.clientX, y: touch.clientY, wheelY: touch.clientY, axis: '' };
+      }, { passive: true });
+
+      canvas.addEventListener('touchmove', event => {
+        if (!gesture || event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        if (touch.identifier !== gesture.id) return;
+        if (!gesture.axis) {
+          const xDistance = Math.abs(touch.clientX - gesture.x);
+          const yDistance = Math.abs(touch.clientY - gesture.y);
+          if (Math.max(xDistance, yDistance) < minimumTravel) return;
+          gesture.axis = yDistance > xDistance * 1.25 ? 'vertical' : 'horizontal';
+        }
+        if (gesture.axis !== 'vertical') return;
+
+        const deltaY = gesture.wheelY - touch.clientY;
+        if (Math.abs(deltaY) < 5) return;
+        gesture.wheelY = touch.clientY;
+        canvas.dispatchEvent(new WheelEvent('wheel', {
+          clientX: touch.clientX, clientY: touch.clientY, deltaY, bubbles: true, cancelable: true,
+        }));
+      }, { passive: true });
+
+      canvas.addEventListener('touchend', event => {
+        const finished = gesture;
+        gesture = undefined;
+        if (!finished || finished.axis !== 'vertical') return;
+
+        // Release Unity's pressed control outside the canvas so a short swipe cannot click it.
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        canvas.dispatchEvent(cancelledTouch(finished.id));
+      }, { capture: true, passive: false });
+      canvas.addEventListener('touchcancel', () => { gesture = undefined; }, { passive: true });
+    })();
   </script>
 </body>
 </html>

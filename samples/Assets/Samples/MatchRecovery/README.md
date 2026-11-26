@@ -9,6 +9,8 @@ An original scoreboard simulation inspired by the general problem of restoring a
 3. **Send older snapshot**. Revision 2 is rejected because the client has observed revision 3.
 4. **Recover from snapshot** to restore revision 3 and the same score as the authority. **Replay last delivery** to confirm the score stays unchanged.
 
+For a partial catch-up, start from **Reset**, skip the first two deliveries, then select **Send older snapshot**. The client installs revision 1 and remains behind the authority at revision 2. Recover again to align both scores.
+
 Open the scene in Unity or choose **Match recovery** from the Web gallery.
 
 ## Implementation and checks

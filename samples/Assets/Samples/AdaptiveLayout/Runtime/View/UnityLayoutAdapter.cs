@@ -8,13 +8,15 @@ namespace GameplaySamples.AdaptiveLayout
         // The camera should look straight down the Z axis at the XY gameplay plane.
         public static bool TryApply(Camera camera, RectTransform safeRoot, Rect worldBounds)
         {
-            return camera && TryApply(camera, safeRoot, worldBounds, camera.pixelRect, Screen.safeArea);
+            return camera && TryApply(camera, safeRoot, worldBounds, camera.pixelRect, Screen.safeArea, camera.aspect);
         }
 
-        internal static bool TryApply(Camera camera, RectTransform safeRoot, Rect worldBounds, Rect viewport, Rect safeArea)
+        internal static bool TryApply(Camera camera, RectTransform safeRoot, Rect worldBounds, Rect viewport,
+            Rect safeArea, float projectionAspect)
         {
             if (!camera || !safeRoot || !camera.orthographic ||
-                !LayoutGeometry.TryCalculate(Convert(viewport), Convert(safeArea), Convert(worldBounds), out LayoutResult layout))
+                !LayoutGeometry.TryCalculate(Convert(viewport), Convert(safeArea), Convert(worldBounds), projectionAspect,
+                    out LayoutResult layout))
                 return false;
 
             LayoutRect anchors = layout.UiAnchors;

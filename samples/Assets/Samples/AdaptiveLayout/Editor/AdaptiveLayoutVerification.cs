@@ -39,6 +39,7 @@ namespace GameplaySamples.AdaptiveLayout.Editor
 
                 var portrait = new Rect(10f, 30f, 900f, 1600f);
                 var safe = new Rect(46f, 85f, 828f, 1490f);
+                camera.aspect = portrait.width / portrait.height;
                 Check(Measure(portrait, safe), "The configured components did not accept the portrait sample.");
                 Check(root.anchorMin == new Vector2(0.04f, 0.034375f) && root.anchorMax == new Vector2(0.96f, 0.965625f),
                     "The safe root did not receive the expected viewport-relative anchors.");
@@ -54,13 +55,29 @@ namespace GameplaySamples.AdaptiveLayout.Editor
                     "An invalid measurement changed the last valid transforms.");
 
                 var landscape = new Rect(0f, 0f, 1600f, 900f);
+                camera.aspect = landscape.width / landscape.height;
                 Check(Measure(landscape, landscape) && Mathf.Approximately(camera.orthographicSize, 3.5f), "Landscape did not fit the world.");
+                camera.aspect = portrait.width / portrait.height;
                 Check(Measure(portrait, safe) && camera.orthographicSize == initialSize && root.anchorMin == initialMin && root.anchorMax == initialMax,
                     "Portrait was not restored after the landscape measurement.");
 
                 camera.orthographicSize = initialSize + 1f;
                 Check(!Measure(portrait, safe) && camera.orthographicSize == initialSize + 1f,
                     "Identical measurements rewrote the camera.");
+
+                camera.aspect = 0.75f;
+                Check(Measure(portrait, safe) && Mathf.Approximately(camera.orthographicSize, 8f),
+                    "A nondefault projection aspect did not determine the world fit.");
+                camera.aspect = 0.5f;
+                Check(Measure(portrait, safe) && Mathf.Approximately(camera.orthographicSize, 12f),
+                    "Changing only Camera.aspect did not recompute the world fit.");
+                Check(root.anchorMin == initialMin && root.anchorMax == initialMax,
+                    "A projection-aspect change altered pixel-relative HUD anchors.");
+                Vector3 left = camera.WorldToViewportPoint(new Vector3(-2f, 6.5f, 0f));
+                Vector3 right = camera.WorldToViewportPoint(new Vector3(10f, 6.5f, 0f));
+                Check(left.x >= -0.001f && right.x <= 1.001f,
+                    "The actual projection cropped the horizontal world bounds.");
+                Check(!Measure(portrait, safe), "A steady custom projection rewrote the layout.");
 
                 Check(Measure(portrait, portrait) && root.anchorMin == Vector2.zero && root.anchorMax == Vector2.one,
                     "A safe-area-only change did not refresh the anchors.");
@@ -70,7 +87,7 @@ namespace GameplaySamples.AdaptiveLayout.Editor
                 Check(Measure(portrait, portrait) && camera.transform.position == new Vector3(0f, 0f, -10f),
                     "A world-bounds-only change did not center the camera.");
 
-                Debug.Log("Adaptive Layout Unity PASS: serialized setup, fit, anchors, invalid sample, rotation, unchanged input and independent changes.");
+                Debug.Log("Adaptive Layout Unity PASS: serialized setup, fit, anchors, invalid sample, rotation, projection aspect and independent changes.");
             }
             finally
             {

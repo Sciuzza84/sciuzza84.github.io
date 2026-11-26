@@ -6,7 +6,7 @@ A scoped, typed event bus with a Unity scene-lifetime example. The design comes 
 
 Open [EvmLite.unity](Scenes/EvmLite.unity) and press Play. With room A loaded, publish a signal. Load room B and publish again, then reload room A and publish once more. The latest signal should reach the loaded room and the persistent receiver once each. The unloaded room should receive zero deliveries. The cumulative totals retain earlier deliveries so you can compare successive runs.
 
-The main scene stays loaded. Each room is an actual additive Unity scene with its own [receiver GameObject](Runtime/View/RoomSignalReceiver.cs). Destroying that GameObject during scene unload disposes the subscriptions it owns. The [demo controller](Runtime/View/EvmLiteExplorer.cs) owns the persistent receiver for the duration of the sample.
+The main scene stays loaded. Each room is an actual additive Unity scene with its own [receiver GameObject](Runtime/View/RoomSignalReceiver.cs). A configured receiver subscribes while active and enabled. Disabling it or unloading its scene releases its scope. Enabling it again registers its listener once. The [demo controller](Runtime/View/EvmLiteExplorer.cs) owns the persistent receiver for the duration of the sample.
 
 ### Nested delivery
 
