@@ -10,4 +10,4 @@ I build mobile games in Unity and C#. I am currently a Senior Unity Developer at
 
 ## Unity samples
 
-Try the [browser gallery](https://sciuzza84.github.io/demos/unity/) or open the [Unity project, source and checks](samples/README.md). The Level Editor sample runs inside Unity.
+Choose a sample in the [browser gallery](https://sciuzza84.github.io/demos/) or open the [Unity project, source and checks](samples/README.md). Level Editor and the layered-layout importer also have shortcuts in the Unity Editor.

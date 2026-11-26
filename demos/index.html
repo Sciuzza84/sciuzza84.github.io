@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Play the Unity and C# portfolio samples and read their source and checks.">
+  <title>Unity samples · Cristiano Piromalli</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .samples-intro { padding-block: clamp(2rem, 6vw, 4.5rem) 1.85rem; }
+    .samples-intro h1 { font-size: clamp(2.5rem, 8vw, 4.4rem); letter-spacing: -.055em; line-height: 1.05; }
+    .samples-intro p { margin-top: .9rem; max-width: 58ch; }
+    .sample-group { padding-block: 1.25rem 2rem; border-top: 1px solid var(--line); }
+    .sample-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: .8rem; list-style: none; margin: .95rem 0 0; padding: 0; }
+    .sample-list a { display: block; min-height: 100%; padding: .95rem; border: 1px solid var(--line); text-decoration: none; }
+    .sample-list a:hover { background: #e8f0eb; border-color: var(--accent); }
+    .sample-list strong { display: block; color: var(--accent); text-decoration: underline; text-underline-offset: .22em; }
+    .sample-list p { margin-top: .35rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="top wrap">
+    <a class="wordmark" href="../">Cristiano Piromalli</a>
+    <nav aria-label="Portfolio links">
+      <a href="../#experience">Games by company</a>
+      <a href="https://github.com/Sciuzza84/sciuzza84.github.io/tree/main/samples">Source and checks</a>
+    </nav>
+  </header>
+  <main id="main" class="wrap" tabindex="-1">
+    <div class="samples-intro">
+      <h1>Unity samples</h1>
+      <p>Original studies of gameplay, production tools, and mobile systems. The browser samples use WebGL 2 and synthetic inputs.</p>
+    </div>
+    <section class="sample-group" aria-labelledby="browser-title">
+      <h2 id="browser-title">Try in a browser</h2>
+      <ul class="sample-list">
+        <li><a href="unity/?sample=dungeon"><strong>Dungeon generator</strong><p>Reproduce a branching map and repair a preset with invalid weights.</p></a></li>
+        <li><a href="unity/?sample=content-updates"><strong>Content updates</strong><p>Transfer only changed files and reject a corrupted update partway through.</p></a></li>
+        <li><a href="unity/?sample=layered-layout"><strong>Layered layout</strong><p>Move a marker and see how validated artwork data changes a level.</p></a></li>
+        <li><a href="unity/?sample=round-planner"><strong>Round planner</strong><p>Balance target exposure while keeping distractors separate.</p></a></li>
+        <li><a href="unity/?sample=match-recovery"><strong>Match recovery</strong><p>Drop a scoreboard update and recover from a snapshot.</p></a></li>
+        <li><a href="unity/?sample=ar-placement"><strong>AR placement</strong><p>Replay simulated tracking and position two fighters around one anchor.</p></a></li>
+        <li><a href="unity/?sample=combat"><strong>Turn-based combat</strong><p>Resolve timed card effects and inspect the opponent’s next choice.</p></a></li>
+        <li><a href="unity/?sample=evm-lite"><strong>EVM Lite</strong><p>Follow who receives a typed event as Unity scenes load and unload.</p></a></li>
+        <li><a href="unity/?sample=adaptive-layout"><strong>Adaptive layout</strong><p>Fit world bounds and UI to portrait and landscape previews.</p></a></li>
+      </ul>
+    </section>
+    <section class="sample-group" aria-labelledby="editor-title">
+      <h2 id="editor-title">Run in Unity Editor</h2>
+      <ul class="sample-list">
+        <li><a href="https://github.com/Sciuzza84/sciuzza84.github.io/tree/main/samples/Assets/Samples/LevelEditor#level-editor"><strong>Level Editor</strong><p>Copy a template, edit the draft and check the live preview.</p></a></li>
+        <li><a href="https://github.com/Sciuzza84/sciuzza84.github.io/tree/main/samples/Assets/Samples/LayeredLayout#layered-layout"><strong>Layered layout importer</strong><p>Generate a prefab and linked level data from a validated fixture.</p></a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
