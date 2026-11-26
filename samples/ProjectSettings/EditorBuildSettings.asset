@@ -32,4 +32,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Samples/ContentUpdates/Scenes/ContentUpdates.unity
     guid: c395c1f9d07c995438c1c3b949637424
+  - enabled: 1
+    path: Assets/Samples/LayeredLayout/Scenes/LayeredLayout.unity
+    guid: a16b59a0d6175b44abcd91762d1cb9a5
+  - enabled: 1
+    path: Assets/Samples/MatchRecovery/Scenes/MatchRecovery.unity
+    guid: beebcc1ad7444c1c967de920d8965f05
+  - enabled: 1
+    path: Assets/Samples/RoundPlanner/Scenes/RoundPlanner.unity
+    guid: be6f51f090c34a2da69be6d707d7aafd
   m_configObjects: {}

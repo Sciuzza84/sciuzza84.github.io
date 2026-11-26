@@ -11,6 +11,7 @@ internal static class Program
 
         try
         {
+            CheckLengthPresets();
             foreach (int nextSeed in seeds)
             {
                 seed = nextSeed;
@@ -69,7 +70,62 @@ internal static class Program
 
         Console.WriteLine($"PASS: {checkedLayouts} layouts. Repeatability, seed variation, grid bounds, unit edges, "
             + "reachability, branches and extreme requests.");
+        Console.WriteLine("PASS: branch preset validation, repair, weighted boundaries and 128 weighted layouts.");
         return 0;
+    }
+
+    private static void CheckLengthPresets()
+    {
+        var (rooms, weights) = DungeonBranchPreset.Example(invalid: true);
+        DungeonPresetValidation invalid = DungeonBranchPreset.Validate(rooms, weights);
+        Require(invalid.Preset == null && invalid.RoomErrors[1].Contains("row 1") &&
+            !invalid.ValidWeightTotal && invalid.WeightFeedback == "Total 80%. Add 20 points.",
+            "The invalid example must describe both problems and yield no usable preset.");
+
+        rooms[1] = "3";
+        var missingWeight = DungeonBranchPreset.Validate(rooms, weights);
+        Require(missingWeight.Preset == null && missingWeight.RoomErrors.All(error => error == null),
+            "Fixing the duplicate must clear its message while leaving the total error.");
+        weights[2] = "90";
+        var repaired = DungeonBranchPreset.Validate(rooms, weights);
+        Require(repaired.Preset != null && repaired.ValidWeightTotal && repaired.WeightFeedback == "Total 100%.",
+            "The edited example must become usable as soon as both errors are corrected.");
+        Require(!RoomValues(DungeonGenerator.Generate(19, 4, repaired.Preset)).SequenceEqual(RoomValues(DungeonGenerator.Generate(19, 4))),
+            "The documented repair must produce a visibly different map from the default at seed 19.");
+        weights[0] = "30";
+        Require(DungeonBranchPreset.Validate(rooms, weights).WeightFeedback == "Total 125%. Remove 25 points.",
+            "An overweight total must say how much weight to remove.");
+
+        var malformed = DungeonBranchPreset.Validate(new[] { "1", "3", "4" }, new[] { "35.5", "-1", "101" });
+        Require(malformed.Preset == null && malformed.RoomErrors[0] != null &&
+            malformed.WeightErrors.All(error => error != null) && !malformed.ValidWeightTotal,
+            "Each malformed or out-of-range field needs its own error.");
+
+        var (validRooms, validWeights) = DungeonBranchPreset.Example(invalid: false);
+        DungeonBranchPreset valid = DungeonBranchPreset.Validate(validRooms, validWeights).Preset;
+        Require(valid != null && valid.LengthForRoll(0) == 2 && valid.LengthForRoll(19) == 2 &&
+            valid.LengthForRoll(20) == 3 && valid.LengthForRoll(49) == 3 &&
+            valid.LengthForRoll(50) == 4 && valid.LengthForRoll(99) == 4,
+            "Weight boundaries must include exactly 20%, 30% and 50% of the possible rolls.");
+
+        DungeonBranchPreset shortPreset = DungeonBranchPreset.Validate(validRooms, new[] { "100", "0", "0" }).Preset;
+        DungeonBranchPreset longPreset = DungeonBranchPreset.Validate(validRooms, new[] { "0", "0", "100" }).Preset;
+        Require(shortPreset.LengthForRoll(99) == 2 && longPreset.LengthForRoll(0) == 4,
+            "Zero-weight entries must never be selected.");
+        int differences = 0;
+        for (int seed = -32; seed < 32; seed++)
+        {
+            DungeonLayout shortLayout = DungeonGenerator.Generate(seed, 4, shortPreset);
+            DungeonLayout longLayout = DungeonGenerator.Generate(seed, 4, longPreset);
+            ValidateGraph(shortLayout);
+            ValidateGraph(longLayout);
+            RequireSameLayout(longLayout, DungeonGenerator.Generate(seed, 4, longPreset));
+            Require(RoomValues(shortLayout).Where(room => room.Item3).SequenceEqual(RoomValues(longLayout).Where(room => room.Item3)),
+                "Length weights must leave the main route intact.");
+            if (!RoomValues(shortLayout).SequenceEqual(RoomValues(longLayout)))
+                differences++;
+        }
+        Require(differences > 0, "Applying different weights must affect the generated map.");
     }
 
     private static void ValidateGraph(DungeonLayout layout)

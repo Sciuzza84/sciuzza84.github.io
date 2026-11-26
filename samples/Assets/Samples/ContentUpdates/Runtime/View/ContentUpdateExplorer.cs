@@ -6,7 +6,7 @@ namespace GameplaySamples.ContentUpdates
     {
         private const float StackedControlsWidth = 520f;
         private static readonly string[] PlatformLabels = { "Android", "iOS" };
-        private static readonly string[] VersionLabels = { "Version 1", "Version 2" };
+        private static readonly string[] VersionLabels = { "Version 1", "Version 2", "Version 3" };
         private static readonly string[] FaultLabels = { "None", "Corrupt file", "Cancel after download" };
         private static readonly Color Ink = new Color32(235, 243, 235, 255);
         private static readonly Color Muted = new Color32(166, 192, 187, 255);
@@ -14,7 +14,7 @@ namespace GameplaySamples.ContentUpdates
         private static readonly Color Amber = new Color32(244, 187, 113, 255);
 
         private readonly InstalledContent[] installations = new InstalledContent[2];
-        private readonly ContentFixture[,] candidates = new ContentFixture[2, 2];
+        private readonly ContentFixture[,] candidates = new ContentFixture[PlatformLabels.Length, VersionLabels.Length];
         private int platformIndex;
         private int versionIndex = 1;
         private int faultIndex;
@@ -28,12 +28,12 @@ namespace GameplaySamples.ContentUpdates
 
         private void Awake()
         {
-            for (int index = 0; index < 2; index++)
+            for (int index = 0; index < installations.Length; index++)
             {
                 var platform = (ContentPlatform)index;
-                ContentFixture first = ContentFixture.Create(platform, 1);
-                candidates[index, 0] = first;
-                candidates[index, 1] = ContentFixture.Create(platform, 2);
+                for (int version = 0; version < VersionLabels.Length; version++)
+                    candidates[index, version] = ContentFixture.Create(platform, version + 1);
+                ContentFixture first = candidates[index, 0];
                 installations[index] = InstalledContent.Update(InstalledContent.Empty(platform), first.Manifest,
                     first.Fetch, () => false).Installed;
             }
@@ -98,6 +98,8 @@ namespace GameplaySamples.ContentUpdates
             }
             GUILayout.Label("Manifest", heading);
             versionIndex = SelectOption(versionIndex, VersionLabels, 34f, stackControls);
+            if (candidates[platformIndex, versionIndex].Manifest.Version == 3)
+                GUILayout.Label("Version 3 changes the board and rules from v2. Corrupt file targets rules.txt after board.txt.", text);
             GUILayout.Label("Simulate a failure", heading);
             faultIndex = SelectOption(faultIndex, FaultLabels, 42f, stackControls);
             GUILayout.Space(13f);
@@ -134,8 +136,7 @@ namespace GameplaySamples.ContentUpdates
                 name =>
                 {
                     transferred = true;
-                    string payload = fixture.Fetch(name);
-                    return faultIndex == 1 ? payload + " (corrupted)" : payload;
+                    return faultIndex == 1 ? fixture.FetchWithCorruption(name) : fixture.Fetch(name);
                 },
                 () => faultIndex == 2 && transferred);
             installations[platformIndex] = result.Installed;
@@ -146,7 +147,10 @@ namespace GameplaySamples.ContentUpdates
                     status = $"Applied v{result.Installed.Version}. Transferred {result.Downloaded}, reused {result.Reused}.";
                     break;
                 case UpdateOutcome.InvalidPayload:
-                    status = $"Integrity check failed for {result.FailedFile}. Kept the installed snapshot.";
+                    status = $"Integrity check failed for {result.FailedFile}.";
+                    if (result.VerifiedDownloads > 0)
+                        status += $" Verified downloads staged before failure: {result.VerifiedDownloads}.";
+                    status += " Kept the installed snapshot.";
                     break;
                 case UpdateOutcome.Cancelled:
                     status = $"Cancelled after {result.Downloaded} transfer. Kept the installed snapshot.";

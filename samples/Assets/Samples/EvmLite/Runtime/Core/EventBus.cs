@@ -18,10 +18,9 @@ namespace GameplaySamples.EvmLite
             if (!channels.TryGetValue(typeof(T), out object channel))
                 return;
 
-            // Take a snapshot so a handler can add or dispose scopes during delivery.
-            // Disposed subscriptions are skipped even when they were in that snapshot.
-            var subscriptions = (List<Subscription<T>>)channel;
-            foreach (Subscription<T> subscription in subscriptions.ToArray())
+            // Keep this dispatch's order while nested publishes can see newer membership.
+            Subscription<T>[] snapshot = ((Channel<T>)channel).Snapshot;
+            foreach (Subscription<T> subscription in snapshot)
             {
                 if (subscription.Active)
                     subscription.Handler(message);
@@ -33,26 +32,51 @@ namespace GameplaySamples.EvmLite
             Type eventType = typeof(T);
             if (!channels.TryGetValue(eventType, out object channel))
             {
-                channel = new List<Subscription<T>>();
+                channel = new Channel<T>();
                 channels.Add(eventType, channel);
             }
 
-            var subscriptions = (List<Subscription<T>>)channel;
-            foreach (Subscription<T> existing in subscriptions)
+            var typedChannel = (Channel<T>)channel;
+            Subscription<T> subscription = typedChannel.Add(scope, handler);
+            if (subscription == null)
+                return null;
+
+            return () =>
             {
-                if (existing.Scope == scope && existing.Handler == handler)
-                    return null;
+                typedChannel.Remove(subscription);
+                if (typedChannel.Count == 0)
+                    channels.Remove(eventType);
+            };
+        }
+
+        private sealed class Channel<T>
+        {
+            private readonly List<Subscription<T>> subscriptions = new List<Subscription<T>>();
+            private Subscription<T>[] snapshot;
+
+            public int Count => subscriptions.Count;
+            public Subscription<T>[] Snapshot => snapshot ??= subscriptions.ToArray();
+
+            public Subscription<T> Add(EventScope scope, Action<T> handler)
+            {
+                foreach (Subscription<T> existing in subscriptions)
+                {
+                    if (existing.Scope == scope && existing.Handler == handler)
+                        return null;
+                }
+
+                var subscription = new Subscription<T>(scope, handler);
+                subscriptions.Add(subscription);
+                snapshot = null;
+                return subscription;
             }
 
-            var subscription = new Subscription<T>(scope, handler);
-            subscriptions.Add(subscription);
-            return () =>
+            public void Remove(Subscription<T> subscription)
             {
                 subscription.Active = false;
                 subscriptions.Remove(subscription);
-                if (subscriptions.Count == 0)
-                    channels.Remove(eventType);
-            };
+                snapshot = null;
+            }
         }
 
         private sealed class Subscription<T>

@@ -6,13 +6,19 @@ namespace GameplaySamples.ContentUpdates
     public sealed class ContentFixture
     {
         private readonly Dictionary<string, string> payloads;
+        private readonly string corruptionTarget;
 
-        private ContentFixture(ContentPlatform platform, int version, Dictionary<string, string> payloads)
+        private ContentFixture(ContentPlatform platform, int version, (string Name, string Payload)[] files,
+            string corruptionTarget)
         {
-            this.payloads = payloads;
+            this.corruptionTarget = corruptionTarget;
+            payloads = new Dictionary<string, string>(StringComparer.Ordinal);
             var entries = new List<ContentEntry>();
-            foreach (KeyValuePair<string, string> pair in payloads)
-                entries.Add(new ContentEntry(pair.Key, ContentDigest.For(pair.Value)));
+            foreach (var file in files)
+            {
+                payloads.Add(file.Name, file.Payload);
+                entries.Add(new ContentEntry(file.Name, ContentDigest.For(file.Payload)));
+            }
             Manifest = new ContentManifest(platform, version, entries);
         }
 
@@ -23,18 +29,26 @@ namespace GameplaySamples.ContentUpdates
             return payloads.TryGetValue(name, out string payload) ? payload : null;
         }
 
+        public string FetchWithCorruption(string name)
+        {
+            string payload = Fetch(name);
+            return payload != null && (corruptionTarget == null || name == corruptionTarget)
+                ? payload + " (corrupted)"
+                : payload;
+        }
+
         public static ContentFixture Create(ContentPlatform platform, int version)
         {
-            if (version != 1 && version != 2)
+            if (version < 1 || version > 3)
                 throw new ArgumentOutOfRangeException(nameof(version));
 
             string device = platform == ContentPlatform.Android ? "android" : "ios";
-            return new ContentFixture(platform, version, new Dictionary<string, string>(StringComparer.Ordinal)
+            return new ContentFixture(platform, version, new[]
             {
-                ["board.txt"] = device + " | tile layout",
-                ["rules.txt"] = device + " | five turns",
-                ["palette.txt"] = device + (version == 1 ? " | teal, ink" : " | teal, ink, amber")
-            });
+                ("board.txt", device + (version == 3 ? " | expanded tile layout" : " | tile layout")),
+                ("rules.txt", device + (version == 3 ? " | six turns" : " | five turns")),
+                ("palette.txt", device + (version == 1 ? " | teal, ink" : " | teal, ink, amber"))
+            }, version == 3 ? "rules.txt" : null);
         }
     }
 }

@@ -8,10 +8,10 @@ namespace GameplaySamples.Dungeon
         public const int MaxBranches = 8;
 
         // The layout keeps the original request, even when the grid or the cap limits placement.
-        public static DungeonLayout Generate(int seed, int requestedBranches)
-        {
-            return new Builder(seed).Build(requestedBranches);
-        }
+        public static DungeonLayout Generate(int seed, int requestedBranches) => Generate(seed, requestedBranches, null);
+
+        internal static DungeonLayout Generate(int seed, int requestedBranches, DungeonBranchPreset preset) =>
+            new Builder(seed, preset).Build(requestedBranches);
 
         private sealed class Builder
         {
@@ -20,12 +20,14 @@ namespace GameplaySamples.Dungeon
             private readonly List<DungeonRoom> rooms = new List<DungeonRoom>();
             private readonly List<DungeonEdge> edges = new List<DungeonEdge>();
             private readonly bool[,] occupied = new bool[Width, Height];
+            private readonly DungeonBranchPreset preset;
             private uint randomState;
             private int rejectedCandidates;
             private DungeonBranchRejection? firstRejection;
 
-            internal Builder(int seed)
+            internal Builder(int seed, DungeonBranchPreset preset)
             {
+                this.preset = preset;
                 randomState = unchecked((uint)seed * 2654435761u);
             }
 
@@ -45,7 +47,7 @@ namespace GameplaySamples.Dungeon
                     if (usedRoots.Contains(site.Root))
                         continue;
 
-                    int length = 2 + Next(3);
+                    int length = preset == null ? 2 + Next(3) : preset.LengthForRoll(Next(100));
                     int tailLength = Next(3);
                     int turn = Next(2) == 0 ? -1 : 1;
                     bool placed = TryBranch(site, length, tailLength, turn);

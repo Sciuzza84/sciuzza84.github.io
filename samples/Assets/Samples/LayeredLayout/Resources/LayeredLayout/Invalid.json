@@ -1,0 +1,8 @@
+{
+  "Width": 420,
+  "Height": 280,
+  "Layers": [
+    { "Name": "item_key", "X": 102, "Y": 86, "Order": 1 },
+    { "Name": "item_beacon", "X": 456, "Y": 122, "Order": 2 }
+  ]
+}

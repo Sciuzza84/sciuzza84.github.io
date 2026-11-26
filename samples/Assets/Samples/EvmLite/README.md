@@ -19,8 +19,10 @@ bus.Publish(42);
 
 Subscribers listen for an exact payload type. Registering the same delegate twice in one scope adds it once. Disposing the scope twice has the same effect as disposing it once, and subscribing to a disposed scope is an error.
 
-The [bus](Runtime/Core/EventBus.cs) delivers synchronously in subscription order on a single thread. It snapshots that order per publish, then skips subscriptions disposed before their turn. A handler added during delivery participates in the next publish. Exceptions propagate to the publisher. Each snapshot allocates an array, so measure before choosing this design for high-frequency events.
+The [bus](Runtime/Core/EventBus.cs) delivers synchronously in subscription order on a single thread. A publish holds its starting order and skips subscriptions disposed before their turn. A new handler joins subsequent publishes, including one started from inside a callback. The nested publish completes before the outer one resumes. Exceptions propagate to the publisher and stop the current dispatch.
+
+Each event type caches a snapshot of its subscription list. Adding or removing a handler invalidates that type’s snapshot, and its next publish rebuilds it. Stable subscriptions reuse the array across sends. This keeps one extra reference per subscriber in the cached order and moves array creation to the first dispatch after a change. Scope setup, cleanup and handler work have their own allocation costs.
 
 ## Verify
 
-From the repository root, run `dotnet run --project Tests/EvmLite/EvmLite.Checks.csproj -c Release`. The [checks](../../../Tests/EvmLite/Program.cs) exercise exact typing, repeated room replacement, duplicate subscription and cleanup, and changes made by a handler during delivery. The Unity scene separately lets you observe the real scene load and unload.
+From the repository root, run `dotnet run --project Tests/EvmLite/EvmLite.Checks.csproj -c Release`. The [checks](../../../Tests/EvmLite/Program.cs) cover exact typing, repeated room replacement, duplicate subscriptions, and nested publishes during scope changes. The .NET check also requires zero managed bytes over 10,000 warmed publishes with two stable subscribers and allocation-free callbacks. Profile your Unity player separately for its performance characteristics. The Unity scene lets you observe the real scene load and unload.

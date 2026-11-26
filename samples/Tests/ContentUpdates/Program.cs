@@ -23,8 +23,9 @@ foreach (ContentPlatform platform in Enum.GetValues<ContentPlatform>())
     Check(repeated.Outcome == UpdateOutcome.Applied && repeated.Downloaded == 0 && repeated.Reused == 3,
         "repeating the same version needs no transfer");
 
-    UpdateResult corrupt = InstalledContent.Update(baseline, second.Manifest, _ => "wrong checksum", () => false);
+    UpdateResult corrupt = InstalledContent.Update(baseline, second.Manifest, second.FetchWithCorruption, () => false);
     Check(corrupt.Outcome == UpdateOutcome.InvalidPayload && corrupt.FailedFile == "palette.txt" &&
+        corrupt.VerifiedDownloads == 0 &&
         ReferenceEquals(corrupt.Installed, baseline) && corrupt.Installed.Read("palette.txt") == oldPalette,
         "invalid payload rolls back");
 
@@ -34,19 +35,29 @@ foreach (ContentPlatform platform in Enum.GetValues<ContentPlatform>())
         downloaded = true;
         return second.Fetch(name);
     }, () => downloaded);
-    Check(cancelled.Outcome == UpdateOutcome.Cancelled && cancelled.Downloaded == 1 &&
+    Check(cancelled.Outcome == UpdateOutcome.Cancelled && cancelled.Downloaded == 1 && cancelled.VerifiedDownloads == 1 &&
         ReferenceEquals(cancelled.Installed, baseline), "late cancellation discards verified staging");
 
-    var broken = new ContentManifest(platform, 3, new[]
+    ContentFixture third = ContentFixture.Create(platform, 3);
+    var attempted = new List<string>();
+    UpdateResult partiallyStaged = InstalledContent.Update(changed.Installed, third.Manifest, name =>
     {
-        new ContentEntry("board.txt", ContentDigest.For("valid new board")),
-        new ContentEntry("rules.txt", ContentDigest.For("expected replacement"))
-    });
-    UpdateResult partiallyStaged = InstalledContent.Update(baseline, broken,
-        name => name == "board.txt" ? "valid new board" : "invalid rules", () => false);
-    Check(partiallyStaged.Outcome == UpdateOutcome.InvalidPayload && partiallyStaged.Downloaded == 2 &&
-        ReferenceEquals(partiallyStaged.Installed, baseline) &&
-        partiallyStaged.Installed.Read("board.txt") == first.Fetch("board.txt"), "partial staging never replaces a file");
+        attempted.Add(name);
+        return third.FetchWithCorruption(name);
+    }, () => false);
+    Check(attempted.SequenceEqual(new[] { "board.txt", "rules.txt" }) &&
+        partiallyStaged.Outcome == UpdateOutcome.InvalidPayload && partiallyStaged.FailedFile == "rules.txt" &&
+        partiallyStaged.Downloaded == 2 && partiallyStaged.VerifiedDownloads == 1 &&
+        ReferenceEquals(partiallyStaged.Installed, changed.Installed) && partiallyStaged.Installed.Version == 2 &&
+        partiallyStaged.Installed.Read("board.txt") == second.Fetch("board.txt") &&
+        partiallyStaged.Installed.Read("rules.txt") == second.Fetch("rules.txt"), "partial staging never replaces a file");
+
+    UpdateResult retry = InstalledContent.Update(partiallyStaged.Installed, third.Manifest, third.Fetch, () => false);
+    Check(retry.Outcome == UpdateOutcome.Applied && retry.Installed.Version == 3 && retry.Downloaded == 2 &&
+        retry.VerifiedDownloads == 2 && retry.Reused == 1 &&
+        retry.Installed.Read("board.txt") == third.Fetch("board.txt") &&
+        retry.Installed.Read("rules.txt") == third.Fetch("rules.txt") &&
+        retry.Installed.Read("palette.txt") == second.Fetch("palette.txt"), "clean retry commits both changed files");
 }
 
 ContentManifest ios = ContentFixture.Create(ContentPlatform.Ios, 1).Manifest;
@@ -59,7 +70,7 @@ catch (ArgumentException)
 {
 }
 
-Console.WriteLine("PASS: initial install, selective transfer, no-op retry, corrupt payload, cancellation, staged rollback, and platform isolation.");
+Console.WriteLine("PASS: initial install, selective transfer, no-op retry, corrupt payload, cancellation, staged rollback, clean retry, and platform isolation.");
 
 static void Check(bool condition, string name)
 {

@@ -8,6 +8,7 @@ namespace GameplaySamples.Dungeon
     public sealed class DungeonExplorer : MonoBehaviour
     {
         private const string SeedField = "DungeonSeed";
+        private const float PresetPanelHeight = 402f;
         private static readonly Color Paper = Rgb(0xECECE2);
         private static readonly Color Muted = Rgb(0xAFBFBC);
         private static readonly Color Ink = Rgb(0x111C21);
@@ -20,6 +21,10 @@ namespace GameplaySamples.Dungeon
         private readonly System.Random seedPicker = new System.Random();
         private readonly List<Texture2D> textures = new List<Texture2D>();
         private DungeonLayout layout;
+        private DungeonBranchPreset activePreset;
+        private DungeonPresetValidation presetValidation;
+        private string[] roomText, weightText;
+        private bool showPresets;
         private int branches = 4;
         private string seedText;
         private string seedError;
@@ -27,11 +32,13 @@ namespace GameplaySamples.Dungeon
         private string branchSummary;
         private string rejectionSummary;
         private Vector2 scrollPosition;
+        private Vector2 controlsScrollPosition;
         private GUIStyle title, heading, body, caption, alignedCaption, value, marker;
-        private GUIStyle primaryButton, secondaryButton, seedInput;
+        private GUIStyle primaryButton, secondaryButton, seedInput, compactButton, fieldError, totalError;
 
         private void Awake()
         {
+            LoadExample(invalid: false);
             SetSeed(19);
         }
 
@@ -39,7 +46,7 @@ namespace GameplaySamples.Dungeon
         {
             seedText = seed.ToString(CultureInfo.InvariantCulture);
             seedError = string.Empty;
-            layout = DungeonGenerator.Generate(seed, branches);
+            layout = DungeonGenerator.Generate(seed, branches, activePreset);
             mapCaption = "Seed " + seedText;
             branchSummary = $"Placed {layout.PlacedBranches} of {layout.RequestedBranches} branches. Rejected candidates: {layout.RejectedCandidates}.";
             rejectionSummary = layout.FirstRejection?.Reason switch
@@ -53,10 +60,17 @@ namespace GameplaySamples.Dungeon
 
         private void ApplyInput()
         {
-            if (int.TryParse(seedText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int seed))
+            if (TryReadSeed(out int seed))
                 SetSeed(seed);
-            else
-                seedError = "Enter a whole number from -2147483648 to 2147483647.";
+        }
+
+        private bool TryReadSeed(out int seed)
+        {
+            if (int.TryParse(seedText, NumberStyles.Integer, CultureInfo.InvariantCulture, out seed))
+                return true;
+
+            seedError = "Enter a whole number from -2147483648 to 2147483647.";
+            return false;
         }
 
         private void OnGUI()
@@ -72,8 +86,9 @@ namespace GameplaySamples.Dungeon
             float inset = stacked ? 12f : 24f;
             float top = stacked ? 68f : 84f;
             float mapHeight = stacked ? Mathf.Clamp(width * 0.68f, 224f, 388f) : Mathf.Max(352f, height - top - inset);
-            float controlsHeight = string.IsNullOrEmpty(rejectionSummary) ? 274f : 319f;
-            float pageHeight = top + mapHeight + inset + (stacked ? 12f + controlsHeight : 0f);
+            float weightsButtonY = string.IsNullOrEmpty(rejectionSummary) ? 274f : 319f;
+            float controlsHeight = weightsButtonY + 45f + (showPresets ? PresetPanelHeight : 0f);
+            float pageHeight = top + inset + (stacked ? mapHeight + 12f + controlsHeight : mapHeight);
             Matrix4x4 previousMatrix = GUI.matrix;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
             Fill(new Rect(0, 0, width, height), Ink);
@@ -94,12 +109,24 @@ namespace GameplaySamples.Dungeon
             if (stacked)
             {
                 DrawMap(new Rect(left, top, contentWidth, mapHeight));
-                DrawControls(new Rect(left, top + mapHeight + 12f, contentWidth, controlsHeight));
+                DrawControls(new Rect(left, top + mapHeight + 12f, contentWidth, controlsHeight), weightsButtonY);
             }
             else
             {
                 float rail = Mathf.Clamp(contentWidth * 0.27f, 224f, 290f);
-                DrawControls(new Rect(left, top, rail, controlsHeight));
+                if (controlsHeight > mapHeight)
+                {
+                    float railContentWidth = rail - 18f;
+                    controlsScrollPosition = GUI.BeginScrollView(new Rect(left, top, rail, mapHeight), controlsScrollPosition,
+                        new Rect(0f, 0f, railContentWidth, controlsHeight), false, true);
+                    DrawControls(new Rect(0f, 0f, railContentWidth, controlsHeight), weightsButtonY);
+                    GUI.EndScrollView();
+                }
+                else
+                {
+                    controlsScrollPosition = Vector2.zero;
+                    DrawControls(new Rect(left, top, rail, controlsHeight), weightsButtonY);
+                }
                 DrawMap(new Rect(left + rail + 14f, top, contentWidth - rail - 14f, mapHeight));
             }
 
@@ -108,7 +135,7 @@ namespace GameplaySamples.Dungeon
             GUI.matrix = previousMatrix;
         }
 
-        private void DrawControls(Rect box)
+        private void DrawControls(Rect box, float weightsButtonY)
         {
             GUI.BeginGroup(box);
             Fill(new Rect(0, 0, box.width, box.height), Panel);
@@ -145,7 +172,94 @@ namespace GameplaySamples.Dungeon
             string feedback = string.IsNullOrEmpty(seedError) ? branchSummary : seedError;
             GUI.Label(new Rect(x, 225f, w, 44), feedback, caption);
             GUI.Label(new Rect(x, 266f, w, 44), rejectionSummary, caption);
+            if (GUI.Button(new Rect(x, weightsButtonY, w, 34f), showPresets ? "Hide length weights" : "Edit length weights", secondaryButton))
+                showPresets = !showPresets;
+            if (showPresets)
+                DrawPresetControls(x, weightsButtonY + 45f, w);
             GUI.EndGroup();
+        }
+
+        private void LoadExample(bool invalid)
+        {
+            (roomText, weightText) = DungeonBranchPreset.Example(invalid);
+            presetValidation = DungeonBranchPreset.Validate(roomText, weightText);
+        }
+
+        private void DrawPresetControls(float x, float y, float width)
+        {
+            GUI.Label(new Rect(x, y, width, 24f), "Straight rooms before a bend", caption);
+            float buttonWidth = (width - 6f) / 2;
+            if (GUI.Button(new Rect(x, y + 30f, buttonWidth, 32f), "Valid preset", compactButton))
+                LoadExample(invalid: false);
+            if (GUI.Button(new Rect(x + buttonWidth + 6f, y + 30f, buttonWidth, 32f), "Invalid preset", compactButton))
+                LoadExample(invalid: true);
+
+            const float rowNumberWidth = 19f;
+            float fieldWidth = (width - rowNumberWidth - 8f) / 2;
+            float roomX = x + rowNumberWidth;
+            float weightX = roomX + fieldWidth + 8f;
+            GUI.Label(new Rect(roomX, y + 67f, fieldWidth, 20f), "Rooms", caption);
+            GUI.Label(new Rect(weightX, y + 67f, fieldWidth, 20f), "Weight (%)", caption);
+            bool edited = false;
+            for (int index = 0; index < roomText.Length; index++)
+            {
+                float rowY = y + 89f + index * 64f;
+                GUI.Label(new Rect(x, rowY, rowNumberWidth, 28f), (index + 1).ToString(CultureInfo.InvariantCulture), caption);
+                edited |= DrawPresetField(new Rect(roomX, rowY, fieldWidth, 28f), ref roomText[index],
+                    presetValidation.RoomErrors[index], 2);
+                edited |= DrawPresetField(new Rect(weightX, rowY, fieldWidth, 28f), ref weightText[index],
+                    presetValidation.WeightErrors[index], 3);
+            }
+            if (edited)
+                presetValidation = DungeonBranchPreset.Validate(roomText, weightText);
+
+            GUI.Label(new Rect(x, y + 280f, width, 32f), presetValidation.WeightFeedback,
+                presetValidation.ValidWeightTotal ? caption : totalError);
+            bool wasEnabled = GUI.enabled;
+            GUI.enabled = wasEnabled && presetValidation.Preset != null;
+            if (GUI.Button(new Rect(x, y + 315f, buttonWidth, 34f), "Apply weights", compactButton))
+                ApplyPreset(presetValidation.Preset);
+            GUI.enabled = wasEnabled && activePreset != null;
+            if (GUI.Button(new Rect(x + buttonWidth + 6f, y + 315f, buttonWidth, 34f), "Restore default", compactButton))
+                ApplyPreset(null);
+            GUI.enabled = wasEnabled;
+
+            string status = GetPresetStatus();
+            GUI.Label(new Rect(x, y + 351f, width, 37f), status, caption);
+        }
+
+        private bool DrawPresetField(Rect rect, ref string field, string error, int maxLength)
+        {
+            if (error != null)
+            {
+                Fill(new Rect(rect.x - 1f, rect.y - 1f, rect.width + 2f, rect.height + 2f), Rejection);
+                GUI.Label(new Rect(rect.x, rect.yMax + 2f, rect.width, 32f), error, fieldError);
+            }
+
+            string before = field;
+            field = GUI.TextField(rect, field, maxLength, seedInput);
+            return field != before;
+        }
+
+        private void ApplyPreset(DungeonBranchPreset preset)
+        {
+            if (!TryReadSeed(out int seed))
+                return;
+
+            activePreset = preset;
+            SetSeed(seed);
+        }
+
+        private string GetPresetStatus()
+        {
+            if (!string.IsNullOrEmpty(seedError))
+                return "Enter a valid seed above to apply.";
+            if (activePreset == null)
+                return "The map uses its default weights.";
+
+            return activePreset == presetValidation.Preset
+                ? "These weights are applied to the map."
+                : "The map uses the last applied weights.";
         }
 
         private void ChangeBranches(int change)
@@ -265,6 +379,11 @@ namespace GameplaySamples.Dungeon
             marker = TextStyle(12, Ink, true, TextAnchor.MiddleCenter);
             primaryButton = ControlStyle(Ink, MainRoute, Rgb(0xADF4D8), TextAnchor.MiddleCenter);
             secondaryButton = ControlStyle(Paper, Border, Rgb(0x4B6668), TextAnchor.MiddleCenter);
+            compactButton = new GUIStyle(secondaryButton) { fontSize = 12 };
+            fieldError = TextStyle(11, Rejection, false, TextAnchor.UpperLeft);
+            fieldError.wordWrap = true;
+            totalError = new GUIStyle(caption);
+            totalError.normal.textColor = Rejection;
             seedInput = ControlStyle(Paper, Ink, Rgb(0x314247), TextAnchor.MiddleLeft);
             seedInput.padding = new RectOffset(9, 6, 0, 0);
         }

@@ -147,6 +147,7 @@ namespace GameplaySamples.ContentUpdates
         public UpdateOutcome Outcome { get; }
         public InstalledContent Installed { get; }
         public int Downloaded { get; }
+        public int VerifiedDownloads => Downloaded - (Outcome == UpdateOutcome.InvalidPayload ? 1 : 0);
         public int Reused { get; }
         public string FailedFile { get; }
     }

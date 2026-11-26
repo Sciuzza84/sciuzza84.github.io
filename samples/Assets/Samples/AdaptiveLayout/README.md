@@ -8,8 +8,19 @@ Open the **Adaptive Layout** scene and try portrait **9:16** with cutouts enable
 
 The HUD root is normalized against the intersection of the safe area and viewport. The world camera fits the wider requirement of world height or world width divided by the viewport aspect. Interactive HUD remains clear of cutouts, while the game can render behind them. Layout updates use the original bounds each time. An invalid resize preserves the previous valid configuration.
 
-The scene previews these calculations with a simulated viewport. For an orthographic camera looking down the Z axis at the XY gameplay plane, call `UnityLayoutAdapter.TryApply(camera, safeRoot, worldBounds)` on initial layout and after the camera's pixel rectangle or `Screen.safeArea` changes. Attach the HUD items to the safe root and anchor them normally. The root must stretch inside a parent canvas that matches the camera viewport. The adapter leaves the current configuration in place if an input is empty during resizing.
+The scene demonstrates these calculations with simulated viewports and cutouts.
+
+## Set it up in a Unity scene
+
+1. Use an orthographic camera aligned with the XY gameplay plane. For a playfield on `Z = 0`, position the camera at `Z = -10` with default rotation and viewport aspect.
+2. Set the HUD Canvas to **Screen Space - Camera** and assign that camera. Add a stretched `SafeRoot` RectTransform directly inside the Canvas. Put the HUD elements under `SafeRoot` and anchor them there.
+3. Add [Adaptive Layout Controller](Runtime/View/AdaptiveLayoutController.cs) to a scene GameObject. In the Inspector assign **Target Camera** and **Safe Root**. For a playfield 12 units wide and 7 high, set **World Bounds** to `X = -6`, `Y = -3.5`, `W = 12`, `H = 7`.
+4. Enter Play and change the Game view aspect. The camera fits the same world bounds and keeps its Z position. The controller sets the root anchors from the overlap of the camera's viewport and the safe area.
+
+The controller applies on enable and refreshes when the camera viewport, screen safe area, world bounds or assigned components change. Empty or disjoint samples preserve the last valid camera and anchors. Use one controller for each camera and HUD pair. The setup uses the main display. Call [UnityLayoutAdapter.TryApply](Runtime/View/UnityLayoutAdapter.cs) directly if you already manage layout updates in your own component.
 
 ## Checks
 
 From the repository root run `dotnet run --project Tests/AdaptiveLayout/AdaptiveLayout.Checks.csproj -c Release`. The checks include asymmetric insets, a nonzero viewport origin, containment, repeated orientation changes, and transient invalid measurements.
+
+Run the Unity Editor in batch mode with `-executeMethod GameplaySamples.AdaptiveLayout.Editor.AdaptiveLayoutVerification.VerifySample` to check an actual Camera and RectTransform with injected viewport and safe-area measurements. It verifies setup, camera and HUD transforms, an invalid resize, rotation, change detection and steady inputs.

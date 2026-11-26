@@ -10,7 +10,10 @@ internal static class Program
             SubscriptionsAndDisposalAreIdempotent();
             LifetimeFollowsTwentyRoomChanges();
             HandlerChangesDuringPublishArePredictable();
-            Console.WriteLine("PASS: typed delivery, duplicate subscriptions, 20 room changes and changes during dispatch.");
+            NestedPublishUsesTheCurrentSubscriptionOrder();
+            NestedPublishCanReplaceAnEmptyChannel();
+            StablePublishDoesNotAllocate();
+            Console.WriteLine("PASS: typed delivery, duplicate subscriptions, 20 room changes, reentrant dispatch and stable publishing.");
             return 0;
         }
         catch (InvalidOperationException error)
@@ -107,6 +110,84 @@ internal static class Program
         trace.Clear();
         bus.Publish(2);
         Require(trace.SequenceEqual(new[] { "first", "late" }), "The second publish did not deliver in subscription order.");
+    }
+
+    private static void NestedPublishUsesTheCurrentSubscriptionOrder()
+    {
+        var bus = new EventBus();
+        using EventScope first = bus.CreateScope();
+        using EventScope removed = bus.CreateScope();
+        using EventScope survivor = bus.CreateScope();
+        using EventScope added = bus.CreateScope();
+        var trace = new List<string>();
+
+        first.Subscribe<int>(value =>
+        {
+            trace.Add($"first:{value}");
+            if (value == 1)
+            {
+                removed.Dispose();
+                added.Subscribe<int>(newValue => trace.Add($"added:{newValue}"));
+                bus.Publish(2);
+                trace.Add("first:resumed");
+            }
+        });
+        removed.Subscribe<int>(value => trace.Add($"removed:{value}"));
+        survivor.Subscribe<int>(value => trace.Add($"survivor:{value}"));
+        bus.Publish(1);
+
+        string[] expected = { "first:1", "first:2", "survivor:2", "added:2", "first:resumed", "survivor:1" };
+        Require(trace.SequenceEqual(expected), $"Unexpected nested delivery order: {string.Join(", ", trace)}");
+    }
+
+    private static void NestedPublishCanReplaceAnEmptyChannel()
+    {
+        var bus = new EventBus();
+        using EventScope original = bus.CreateScope();
+        using EventScope replacement = bus.CreateScope();
+        var trace = new List<string>();
+
+        original.Subscribe<string>(value =>
+        {
+            trace.Add($"original:{value}");
+            original.Dispose();
+            replacement.Subscribe<string>(newValue => trace.Add($"replacement:{newValue}"));
+            bus.Publish("inner");
+        });
+
+        bus.Publish("outer");
+        bus.Publish("next");
+
+        string[] expected = { "original:outer", "replacement:inner", "replacement:next" };
+        Require(trace.SequenceEqual(expected), $"Unexpected replacement channel delivery: {string.Join(", ", trace)}");
+    }
+
+    private static void StablePublishDoesNotAllocate()
+    {
+        const int Publications = 10_000;
+        var bus = new EventBus();
+        using EventScope first = bus.CreateScope();
+        using EventScope second = bus.CreateScope();
+        int deliveries = 0;
+        Action<int> count = value => deliveries += value;
+        first.Subscribe(count);
+        second.Subscribe(count);
+
+        PublishMany(bus, Publications);
+        int beforeDeliveries = deliveries;
+        long beforeBytes = GC.GetAllocatedBytesForCurrentThread();
+        PublishMany(bus, Publications);
+        long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - beforeBytes;
+
+        Require(deliveries - beforeDeliveries == Publications * 2, "The allocation check lost deliveries.");
+        Require(allocatedBytes == 0, $"Stable publishing allocated {allocatedBytes:N0} bytes.");
+        Console.WriteLine($"Stable publishing: {allocatedBytes} managed bytes across {Publications:N0} warmed publications.");
+    }
+
+    private static void PublishMany(EventBus bus, int publications)
+    {
+        for (int index = 0; index < publications; index++)
+            bus.Publish(1);
     }
 
     private static void Require(bool condition, string message)

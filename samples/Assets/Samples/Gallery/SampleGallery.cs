@@ -13,7 +13,10 @@ namespace GameplaySamples
             new Entry("dungeon", "Dungeon", "Dungeon generator", "Reproduce a seed and see how side paths fit."),
             new Entry("combat", "Combat", "Turn-based combat", "Step through card effects and an opponent's choices."),
             new Entry("ar-placement", "ArPlacement", "AR placement", "Try target setup with simulated sensor inputs."),
-            new Entry("content-updates", "ContentUpdates", "Content updates", "Apply versioned content and replay an interrupted update.")
+            new Entry("content-updates", "ContentUpdates", "Content updates", "Apply versioned content and replay an interrupted update."),
+            new Entry("layered-layout", "LayeredLayout", "Layered layout", "Validate an artist's layout before it becomes a Unity level."),
+            new Entry("round-planner", "RoundPlanner", "Round planner", "Balance target exposure across a finite catalog."),
+            new Entry("match-recovery", "MatchRecovery", "Match recovery", "Drop a delivery and recover a scoreboard replica from a snapshot.")
         };
 
         private GUIStyle title;
